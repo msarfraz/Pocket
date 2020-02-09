@@ -1,0 +1,64 @@
+﻿@model DotNet.Highcharts.Highcharts
+@{
+    ViewBag.Title = "EventChart";
+}
+<script src="~/Scripts/QIE/Common.js"></script>
+
+<br />
+
+<p>
+    <label for="ddlMonth">Events of the month:</label>
+    <select name="ddlMonth" id="ddlMonth" onchange="ReloadChart()">
+        <option value="1" label="January" />
+        <option value="2" label="February" />
+        <option value="3" label="March" />
+        <option value="4" label="April" />
+        <option value="5" label="May" />
+        <option value="6" label="June" />
+        <option value="7" label="July" />
+        <option value="8" label="August" />
+        <option value="9" label="September" />
+        <option value="10" label="October" />
+        <option value="11" label="November" />
+        <option value="12" label="December" />
+    </select>
+    <select name="ddlYear" id="ddlYear" onchange="ReloadChart()">
+        @for (int i = 2001; i < 2020; i++)
+        {
+            <option value="@i" label="@i" />
+        }
+    </select>
+    @Html.AntiForgeryToken()
+</p>
+<script src="~/Scripts/Highcharts-4.0.1/js/highcharts.src.js"></script>
+<script src="~/Scripts/Highcharts-4.0.1/js/highcharts-more.src.js"></script>
+@(Model)
+
+
+<script>
+    $("#ddlMonth").val('@DateTime.Today.Month');
+    $("#ddlYear").val('@DateTime.Today.Year');
+
+    function ReloadChart()
+    {
+        PostData("/Chart/EventChartData", { Month: $("#ddlMonth").val(), Year: $("#ddlYear").val()}, function(response){
+
+            while (eventchart.series.length > 0)
+                eventchart.series[0].remove();
+            for (i = 0; i < response.length; i++) {
+                eventchart.addSeries({
+                    name: response[i].name,
+                    data: response[i].data
+                },false);
+            }
+            eventchart.redraw();
+        });
+        
+        
+    }
+
+    
+</script>
+
+
+

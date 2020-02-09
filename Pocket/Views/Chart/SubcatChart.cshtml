@@ -1,0 +1,73 @@
+﻿@model Tuple<DotNet.Highcharts.Highcharts, DotNet.Highcharts.Highcharts, IEnumerable<SelectListItem>> 
+
+@{
+    ViewBag.Title = "CategoryChart";
+}
+<script src="~/Scripts/QIE/Common.js"></script>
+<script src="~/Scripts/Highcharts-4.0.1/js/highcharts.src.js"></script>
+<script src="~/Scripts/Highcharts-4.0.1/js/highcharts-more.src.js"></script>
+<script src="~/Scripts/Highcharts-4.0.1/js/highcharts-3d.src.js"></script>
+<br />
+
+<p>
+    <label for="ddlCategory" >Category</label>
+
+        @Html.DropDownList("ddlCategory", Model.Item3, new { onchange = "ReloadChart()" })
+    
+    <label for="ddlMonth">Month:</label>
+    <select name="ddlMonth" id="ddlMonth" onchange="ReloadChart()">
+        <option value="1" label="January" />
+        <option value="2" label="February" />
+        <option value="3" label="March" />
+        <option value="4" label="April" />
+        <option value="5" label="May" />
+        <option value="6" label="June" />
+        <option value="7" label="July" />
+        <option value="8" label="August" />
+        <option value="9" label="September" />
+        <option value="10" label="October" />
+        <option value="11" label="November" />
+        <option value="12" label="December" />
+    </select>
+    <select name="ddlYear" id="ddlYear" onchange="ReloadChart()">
+        @for (int i = 2001; i < 2020; i++)
+        {
+            <option value="@i" label="@i" />
+        }
+    </select>
+    @Html.AntiForgeryToken()
+</p>
+
+@(Model.Item2)
+
+
+<a href="#" onclick="$('#detailsDiv').toggle('slow')">Details</a>
+<div id="detailsDiv">
+    @(Model.Item1)
+
+</div>
+
+<script>
+    $("#ddlMonth").val('@DateTime.Today.Month');
+    $("#ddlYear").val('@DateTime.Today.Year');
+    $('#detailsDiv').toggle(false);
+
+    function ReloadChart()
+    {
+        PostData("/Chart/SubcatChartData", { Month: $("#ddlMonth").val(), Year: $("#ddlYear").val(), CategoryID: $("#ddlCategory").val() }, function (response) {
+            piechart.series[0].setData(response[0], true);
+
+            colchart.series[0].setData(response[1], true);
+            colchart.series[1].setData(response[2], true);
+            colchart.series[2].setData(response[0], true);
+            colchart.xAxis[0].setCategories(response[3], true);
+           
+        });
+        
+        
+    }
+
+</script>
+
+
+

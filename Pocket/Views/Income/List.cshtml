@@ -1,0 +1,72 @@
+﻿@model IEnumerable<Pocket.Models.Income>
+
+@{
+    ViewBag.Title = "List";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<link href="~/Content/themes/redmond/jquery.ui.datepicker.css" rel="stylesheet" />
+
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/DatePickerReady.js"></script>
+<br />
+<p>
+    Income From:
+    @Html.TextBox("IncomeFrom", new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToShortDateString()) To:
+    @Html.TextBox("IncomeTo", DateTime.Now.ToShortDateString())
+    <a href="#" onclick="ReloadGrid()">Reload</a>
+</p>
+<table id="lstIncome"></table>
+<div id="pgrIncome"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+       
+        $(function () {
+            $("#IncomeFrom").datepicker();
+        });
+        $(function () {
+            $("#IncomeTo").datepicker();
+        });
+    });
+    function ReloadGrid() {
+        jQuery("#lstIncome").jqGrid().setGridParam({}).trigger("reloadGrid");
+    }
+
+    var colNames = ['IncomeID', 'Date','Source', 'Account', 'Amount','Description', 'Repeat'];
+    var colModel = [
+        { name: 'IncomeID', index: 'IncomeID', width: 55, key: true, hidden: true },
+        {
+            name: 'IncomeDate', index: 'IncomeDate', width: 100, editable: true, sorttype: "date",datefmt:'mm/dd/yyyy', editoptions: {
+                dataInit: function (el) {
+                $(el).datepicker({dateFormat:'mm/dd/yy'}); 
+            }, 
+                /*defaultValue: function(){ 
+                    var currentTime = new Date(); 
+                    var month = parseInt(currentTime.getMonth() + 1); 
+                    month = month <= 9 ? "0"+month : month; 
+                    var day = currentTime.getDate(); 
+                    day = day <= 9 ? "0"+day : day; 
+                    var year = currentTime.getFullYear(); 
+                    return year+"-"+month + "-"+day; 
+                } */
+            },
+            /*formatter: "date", formatoptions: { srcformat: 'm/d/Y', newformat: 'ShortDate' },*/ editrules: { required: true, date: true }
+        },
+        { name: 'SourceID', index: 'SourceID', width: 100, editable: true, edittype: 'select', editoptions: {/*rows:'1',cols:'40',*/dataUrl: '/incomesource/JSources', dataInit: function (elem) { } } },
+        { name: 'AccountID', index: 'AccountID', width: 100, editable: true, edittype: 'select', editoptions: {/*rows:'1',cols:'40',*/dataUrl: '/qaccount/JAccounts', dataInit: function (elem) { } } },
+        { name: 'Amount', index: 'Amount', width: 100, editable: true, editrules: { required: true, number: true } },
+        { name: 'Description', index: 'Description', width: 100, editable: true, edittype: "textarea", editoptions: { rows: "3", cols: "25" } },
+        { name: 'Repeat', index: 'Repeat', width: 100, editable: true, edittype: 'select', editrules: { required: false, select: true }, editoptions: { dataUrl: '/api/common/RecursionOptions' } }
+
+    ];
+    var postData = {};
+    postData["IncomeFrom"] = function () { return $("#IncomeFrom").val() };
+    postData["IncomeTo"] = function () { return $("#IncomeTo").val(); };
+
+    createJQGrid('/income/jlist', colNames, colModel, 'IncomeID', "/income/jedit", "Income List", "#lstIncome", '#pgrIncome', postData, { sidx: 'IncomeDate', sord: 'desc' });
+    </script>

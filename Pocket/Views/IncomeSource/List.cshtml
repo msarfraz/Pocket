@@ -1,0 +1,27 @@
+﻿@model IEnumerable<Pocket.Models.IncomeSource>
+
+@{
+    ViewBag.Title = "List";
+}
+
+<script src="~/Scripts/jquery-2.0.3.js"></script>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<br />
+
+<table id="rowed2"></table>
+<div id="prowed2"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['SourceID', 'Name'];
+    var colModel = [
+        { name: 'SourceID', index: 'SourceID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: true,editrules:{required:true,maxValue:50}  }
+
+    ];
+    createJQGrid('/incomesource/jlist', colNames, colModel, 'SourceID', "/incomesource/jedit", "Source List", "#rowed2", '#prowed2', null, { sidx: 'Name', sord: 'asc' });
+    </script>

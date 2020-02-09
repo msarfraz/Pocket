@@ -1,0 +1,40 @@
+﻿@model IEnumerable<Pocket.Models.Friend>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create") | @Html.ActionLink("Quick View", "List")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.First().UserFriend.LoginID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().UserFriend.Email)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.UserFriend.LoginID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UserFriend.Email)
+        </td>
+       
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.FriendID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.FriendID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.FriendID })
+        </td>
+    </tr>
+}
+
+</table>

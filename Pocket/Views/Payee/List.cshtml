@@ -1,0 +1,87 @@
+﻿@model IEnumerable<Pocket.Models.Payee>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<script src="~/Scripts/jquery-2.0.3.js"></script>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+
+<br />
+
+<table id="rowed2"></table>
+<div id="prowed2"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['payeeID', 'Name'];
+    var colModel = [
+        { name: 'PayeeID', index: 'PayeeID', width: 55, key: true, hidden:true},
+        { name: 'Name', index: 'Name', width: 100, editable: true,editrules:{required:true,maxValue:50}  }
+
+    ];
+    createJQGrid('/payee/jindex', colNames, colModel, 'PayeeID', "/payee/jedit", "Payees List", "#rowed2", '#prowed2',null,{sidx:'Name'});
+    </script>
+
+
+
+
+
+
+
+<script>
+
+
+    //function EditRow()
+    //{
+    //    if (lastsel2 && lastsel2 != "") {
+    //        jQuery('#rowed2').editRow(lastsel2);
+    //    }
+    //    else {
+    //        jQuery('#rowed2').editGridRow("new");
+    //    }
+    //}
+    //function SaveRow() {
+    //    if (lastsel2 && lastsel2 != "") {
+    //        jQuery('#rowed2').saveRow(lastsel2);
+            
+    //    }
+    //}
+    //jQuery("#rowed2").jqGrid({
+    //    url:'/payee/jindex',
+    //    datatype: "json",
+    //    colNames:['Actions','payeeID','Name'],
+    //    colModel:[
+    //        {name:'act',index:'act', width:75,sortable:false},
+    //        { name: 'PayeeID', index: 'PayeeID', width: 55, key: true },
+    //        {name:'Name',index:'Name', width:100,editable:true}
+            
+    //    ],
+    //    keyIndex :true,
+    //    rowNum:10,
+    //    rowList:[10,20,30],
+    //    pager: '#prowed2',
+    //    sortname: 'PayeeID',
+    //    viewrecords: true,
+    //    sortorder: "asc",
+    //    gridComplete: function(){
+    //        var ids = jQuery("#rowed2").jqGrid('getDataIDs');
+    //        for(var i=0;i < ids.length;i++){
+    //            var cl = ids[i];
+    //            be = "<input style='height:22px;width:20px;' type='button' value='Edit' onclick=\"jQuery('#rowed2').editRow('"+cl+"');\"  />"; 
+    //            se = "<input style='height:22px;width:20px;' type='button' value='Save' onclick=\"jQuery('#rowed2').saveRow('"+cl+"');\"  />"; 
+    //            ce = "<input style='height:22px;width:20px;' type='button' value='Cancel' onclick=\"jQuery('#rowed2').restoreRow('"+cl+"');\" />"; 
+    //            jQuery("#rowed2").jqGrid('setRowData',ids[i],{act:be+se+ce});
+    //        }	
+    //    },
+    //    editurl: "/payee/jedit",
+    //    caption:"Custom edit "
+    //});
+    
+
+    
+</script>

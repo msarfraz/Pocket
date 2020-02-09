@@ -1,0 +1,41 @@
+﻿@model Pocket.Models.Notification
+@{
+    ViewBag.Title = "Notifications";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+
+<br />
+<br />
+<br />
+
+<table id="lstNotifications"></table>
+<div id="pgrNotification"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+
+    var colNames = ['NotificationID', 'Notification', 'URL'];
+    var colModel = [
+        { name: 'NotificationID', index: 'NotificationID', width: 55, key: true, hidden: true },
+        { name: 'Text', index: 'Text', width: 100, editable: false, formatter:LinkFormatter },
+        { name: 'URL', index:'URL', hidden:true }
+        ];
+    createJQGrid('/Notification/jlist', colNames, colModel, 'NotificationID', "", "Notifications", "#lstNotifications", '#pgrNotification', {}, { addgrid: false, editgrid: false, sidx: 'NotificationID', sord:"desc" });
+
+    function LinkFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        
+        if (cellvalue && cellvalue.length > 0) {
+            var tag = "<a href='" + rowObject[2] + "'>" + cellvalue + "</a>";
+            return tag;
+        }
+        else
+            return cellvalue;
+        
+    }
+</script>

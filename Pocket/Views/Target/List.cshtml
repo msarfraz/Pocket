@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Pocket.Models.Target>
+
+@{
+    ViewBag.Title = "List";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+
+<br />
+
+<table id="lstTarget"></table>
+<div id="pgrTarget"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['TargetID', 'Name','Target Amount', 'Target Date', 'Expected Date', 'Status'];
+    var colModel = [
+        { name: 'TargetID', index: 'TargetID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: true },
+        { name: 'TargetAmount', index: 'TargetAmount', width: 100, editable: true, editrules: { required: true, number: true } },
+         {
+             name: 'TargetDate', index: 'TargetDate', width: 100, editable: true, sorttype: "date", datefmt: 'mm/dd/yyyy', editoptions: {
+                 dataInit: function (el) {
+                     $(el).datepicker({ dateFormat: 'mm/dd/yy' });
+                 },
+
+             },
+             editrules: { required: true, date: true }
+         },
+         { name: 'ExpectedDate', index: 'ExpectedDate', width: 100, editable: false},
+    { name: 'Status', index: 'Status', width: 100, editable: true, edittype: 'select', editrules: { required: true, select: true }, editoptions: { dataUrl: '/Target/TargetStatus' } }
+
+    ];
+    createJQGrid('/target/jlist', colNames, colModel, 'TargetID', "/target/jedit", "Target List", "#lstTarget", '#pgrTarget', null, { sidx: 'TargetDate', sord: 'asc' });
+    </script>

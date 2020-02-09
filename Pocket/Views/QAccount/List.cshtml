@@ -1,0 +1,28 @@
+﻿@model IEnumerable<Pocket.Models.Account>
+
+@{
+    ViewBag.Title = "List";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+
+<br />
+<table id="lstAccount"></table>
+<div id="pgrAccount"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['AccountID', 'Name','Initial Amount'];
+    var colModel = [
+        { name: 'AccountID', index: 'AccountID', width: 55, key: true, hidden:true},
+        { name: 'Name', index: 'Name', width: 100, editable: true },
+        { name: 'InitialAmount', index: 'InitialAmount', width: 100, editable: true,editrules:{required:true,number:true} }
+        
+
+    ];
+    createJQGrid('/qaccount/jlist', colNames, colModel, 'AccountID', "/qaccount/jedit", "Account List", "#lstAccount", '#pgrAccount', null, { sidx: 'Name', sord: 'asc' });
+    </script>

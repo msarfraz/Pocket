@@ -1,0 +1,89 @@
+﻿@model Pocket.Models.User
+
+@{
+    ViewBag.Title = "List";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/Common.js"></script>
+
+<br />
+<style>
+        
+    .ui-tooltip {
+        width: 250px;
+    }
+</style>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+   
+        @Html.ValidationSummary(true)
+
+            @Html.LabelFor(model => model.Email, "Add Friend:") @Html.Encode(" ")
+                @Html.TextBoxFor(model => model.Email, new {title="please provide email address." })@Html.Encode(" ")
+                @Html.ValidationMessageFor(model => model.Email) 
+                <input type="submit" value="Add" class="btn btn-link" />
+
+    
+}
+
+<table id="lstFriend"></table>
+<div id="pgrFriend"></div>
+
+<script type="text/javascript">
+    var tooltips = $("[title]").tooltip();
+    var colNames = ['UserID', 'Name', 'Email', 'Status'];
+    var colModel = [
+        { name: 'UserID', index: 'UserID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: false },
+        { name: 'Email', index: 'Email', width: 100, editable: false },
+        { name: 'Status', index: 'Status', width: 100, editable: false }
+        
+
+    ];
+    createJQGrid('/Friend/jlist', colNames, colModel, 'UserID', "/Friend/jedit", "Friends List", "#lstFriend", '#pgrFriend', null, { sidx: 'Status', sord: 'asc',addgrid:false,editgrid:false });
+    </script>
+<br />
+<table id="lstPendingFriend"></table>
+<div id="pgrPendingFriend"></div>
+<script type="text/javascript">
+    var tooltips = $("[title]").tooltip();
+    var colNames = ['UserID', 'Name', 'Email', 'Status'];
+    var colModel = [
+        { name: 'UserID', index: 'UserID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: false },
+        { name: 'Email', index: 'Email', width: 100, editable: false },
+        { name: 'Status', index: 'Status', width: 100, formatter: ButtonFormatter }
+
+
+    ];
+    createJQGrid('/Friend/jpendinglist', colNames, colModel, 'UserID', "", "Friend Requests", "#lstPendingFriend", '#pgrPendingFriend', null, { sidx: 'Email', sord: 'asc', addgrid: false, editgrid: false });
+
+    function ButtonFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+
+        if (cellvalue && cellvalue.length > 0) {
+            var tag = "<input type='button' value='Approve' onclick='ApproveFriend(" + cellvalue + ")'/>"
+            return tag;
+        }
+        else
+            return "<label></label>";
+
+    }
+
+    function ApproveFriend(friendID) {
+        PostData("/Friend/JApproveFriend", { FriendID:friendID}, function(response){
+            $("#lstFriend").jqGrid().trigger('reloadGrid');
+            $("#lstPendingFriend").jqGrid().trigger('reloadGrid');
+        });
+        
+        
+    
+    }
+</script>
+

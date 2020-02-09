@@ -1,0 +1,48 @@
+﻿@model Pocket.Models.Event
+
+@{
+    ViewBag.Title = "Share with friends";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+
+<h2>@Model.Name</h2>
+
+<table id="lstFriends"></table>
+<div id="pgrFriend"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var evid = '@Model.EventID';
+
+    var colNames = ['FriendID', 'Name', 'Share'];
+    var colModel = [
+        { name: 'FriendID', index: 'FriendID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: false },
+        { name: 'Share', formatter: ButtonFormatter, editable: false }
+        ];
+    createJQGrid('/event/jshare', colNames, colModel, 'EventID', "/event/jedit", "Friend List", "#lstFriends", '#pgrFriend', {EventID:evid}, { addgrid:false,editgrid:false,sidx:'UserID' });
+
+    function ButtonFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        
+        if (cellvalue && cellvalue.length > 0) {
+            var tag = "<input type='button' value='Share' onclick='shareFriend(" + cellvalue + ")'/>"
+            return tag;
+        }
+        else
+            return "<label>Shared</label>";
+        
+    }
+    function shareFriend(friendID)
+    {
+        $.post("/event/share", { EventID: evid, UserID: friendID, __RequestVerificationToken: jQuery('input[name=__RequestVerificationToken]').val() })
+          .done(function (data) {
+              $("#lstFriends").jqGrid().trigger('reloadGrid');
+          });
+    }
+</script>

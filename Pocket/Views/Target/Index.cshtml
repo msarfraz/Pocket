@@ -1,0 +1,51 @@
+﻿@model IEnumerable<Pocket.Models.Target>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.User.LoginID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TargetAmount)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ExpectedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.User.LoginID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.TargetAmount)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ExpectedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.TargetID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.TargetID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.TargetID })
+        </td>
+    </tr>
+}
+
+</table>

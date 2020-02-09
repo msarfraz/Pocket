@@ -1,0 +1,61 @@
+﻿@model IEnumerable<Pocket.Models.Event>
+
+@{
+    ViewBag.Title = "List";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+
+<br />
+<table id="lstEvent"></table>
+<div id="pgrEvent"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['EventID', 'Name', 'Event Date', 'Budget Amount', 'Repeat', 'Share', 'Friends' ];
+    var colModel = [
+        { name: 'EventID', index: 'EventID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: true },
+         {
+             name: 'EventDate', index: 'EventDate', width: 100, editable: true, sorttype: "date", datefmt: 'mm/dd/yyyy', editoptions: {
+                 dataInit: function (el) {
+                     $(el).datepicker({ dateFormat: 'mm/dd/yy' });
+                 },
+
+             },
+             editrules: { required: true, date: true }
+         },
+          { name: 'BudgetAmount', index: 'BudgetAmount', width: 100, editable: true, editrules: { required: true, number: true } },
+          { name: 'Recursive', index: 'Recursive', width: 100, editable: true,edittype: 'select', editrules: { required: false, select: true }, editoptions: { dataUrl: '/api/common/RecursionOptions' } },
+         
+    {
+        name: 'share', formatter: 'showlink', formatoptions: { baseLinkUrl: '/Event/share/' } /*, addParam: '&action=edit', idName:'myid'
+        cellattr: function (rowId, tv, rawObject, cm, rdata) {
+            return 'style="background-color:Tomato"';
+        }*/
+    },
+    {name:'Friends', formatter:BulletFormatter, editable:false}
+    ];
+    createJQGrid('/event/jlist', colNames, colModel, 'EventID', "/event/jedit", "Event List", "#lstEvent", '#pgrEvent', null, { sidx: 'EventDate', sord: 'desc' });
+
+    function BulletFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        var bl = "";
+        
+        if (cellvalue && cellvalue.length > 0) {
+            var mySplitResult = cellvalue.split(",");
+            bl = "<ul>";
+            for (i = 0; i < mySplitResult.length; i++) {
+                bl += "<li>" + mySplitResult[i] + "</li>";
+            }
+
+            bl += "</ul>";
+        }
+        
+        return bl;
+    }
+    </script>

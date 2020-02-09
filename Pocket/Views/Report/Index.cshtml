@@ -1,0 +1,36 @@
+﻿
+@{
+    ViewBag.Title = "Summary";
+}
+
+<br />
+
+<h4>Reports</h4>
+
+<p>
+    @Html.ActionLink("Monthly Report By Category", "CategoryReport")
+</p>
+<p>
+    @Html.ActionLink("Events Report", "EventReport")
+</p>
+<p>
+    @Html.ActionLink("Monthly Report By Account / Event / Payee / Vendor", "GroupReport")
+</p>
+<p>
+    @Html.ActionLink("Advance Report", "AdvanceFilter")
+</p>
+
+<h4>Charts</h4>
+
+<p>
+    @Html.ActionLink("Category Chart", "CategoryChart","Chart")
+</p>
+<p>
+    @Html.ActionLink("Subcategories Chart", "SubcatChart", "Chart")
+</p>
+<p>
+    @Html.ActionLink("Targets", "TargetChart", "Chart")
+</p>
+<p>
+    @Html.ActionLink("Events", "EventChart", "Chart")
+</p>
