@@ -1,0 +1,91 @@
+﻿.large-icon
+{
+    font-size:xx-large;
+    
+}
+.bg-purple
+{
+	background-color: #3f51b5;
+}
+.color-form-icon
+{
+    /*color:#7676BC;*/
+color:	#3f51b5;
+}
+.color-lightpurple
+{
+    color:#D4D4FF;
+}
+.li-no-bullets {
+    list-style:none;
+    background-image:none;
+    background-repeat:none;
+    background-position:0; 
+
+    line-height: 0em;
+}
+.ul-no-bullets
+{
+    list-style-type:none;
+    padding:0px;
+    margin:0px;
+}
+.cal-small-font
+{
+    font-size:9px;
+    
+    display: inline
+}
+.cal-x-small-font
+{
+    font-size:6px;
+    
+    display: inline
+}
+.x-badge {
+  font-size: 6px;
+  display: inline-block;
+  color: #fff;
+  background: #8e8e93;
+  border-radius: 10px;
+  padding: 1px 7px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.cal-button {
+  border: 1px solid #007aff;
+  color: #007aff;
+  text-decoration: none;
+  text-align: center;
+  display: block;
+  /*border-radius: 5px;
+  line-height: 27px;*/
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  appearance: none;
+  padding: 1px 10px;
+  margin: 1px;
+  /*height: 29px;
+  white-space: nowrap;*/
+  position: relative;
+  /*overflow: hidden;
+  text-overflow: ellipsis;*/
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.cal-button.button-fill {
+  color: #fff;
+  background: #007aff;
+  border: none;
+}
+li-no-bullents.color-red{
+    font-size:4px;
+    font-family:'Times New Roman', Times, serif;
+    color:black;
+}

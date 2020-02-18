@@ -1,0 +1,65 @@
+<form id="accountedit" class="list-block">
+    <input name="AccountID" type="hidden" value="{{model.AccountID}}">
+    <ul>
+        <li>
+            <div class="item-content">
+                <div class="item-media"><i class="icon ion-ios-briefcase color-form-icon"></i></div>
+                <div class="item-inner">
+
+                    <div class="item-title label">Name {{Template7.global.LocalClass}}</div>
+                    <div class="item-input">
+                        <input name="AccountName" type="text" placeholder="Name" value="{{model.Name}}">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-media"><i class="icon ion-social-usd color-form-icon"></i></div>
+                <div class="item-inner">
+                    <div class="item-title label">Amount</div>
+                    <div class="item-input">
+                        <input id="InitialAmount" name="InitialAmount" type="number" placeholder="Amount" value="{{model.InitialAmount}}">
+
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <li>
+            <!-- Additional "smart-select" class -->
+            <a href="#" class="item-link smart-select" data-back-on-select="true">
+                <!-- select -->
+                <select name="AccountType" class="account-type">
+                    {{#each model.AccountTypes}}
+                    <option value="{{value}}" {{#if selected}} selected="selected" {{/if}}>{{text}}</option>
+                    {{/each}}
+                </select>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-card color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <!-- Select label -->
+                        <div class="item-title">Account Type</div>
+                        <!-- Selected value, not required -->
+                        <div class="item-after">{{model.AccountTypeText}} </div>
+                    </div>
+                </div>
+            </a>
+        </li>
+        {{#if model.AccountID}}
+        <li>
+            <a href="Pages/ReportList.html?name=accountstatement&accountid={{model.AccountID}}" class="item-link">
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-android-drawer color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title">Current Amount</div>
+                        <div class="item-after">
+                            {{model.CurrentAmount}}
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </li>
+        {{/if}}
+    </ul>
+</form>

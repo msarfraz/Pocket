@@ -1,27 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Security;
-using DotNetOpenAuth.AspNet;
-using Microsoft.Web.WebPages.OAuth;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Owin.Security;
 using Pocket.Models;
+using Microsoft.Owin;
 using Postal;
-using WebMatrix.WebData;
-
-
+using Microsoft.Owin.Security.DataProtection;
+using Microsoft.Owin.Helpers;
+using Pocket.Common;
+using Microsoft.Owin.Infrastructure;
+using System.Net;
+using Pocket.Extensions;
 
 namespace Pocket.Controllers
 {
     [Authorize]
-    //[InitializeSimpleMembership]
     public class AccountController : Controller
     {
+        public AccountController()
+            : this(new ApplicationUserManager(new UserStore<ApplicationUser>(new QDbContext())))
+        {
+           
+        }
+
+        public AccountController(UserManager<ApplicationUser> userManager)
+        {
+            UserManager = userManager;
+        }
+
+        public UserManager<ApplicationUser> UserManager { get; private set; }
+         
+        [HttpPost]
+        [AllowAnonymous]
+        public JsonResult MAutoLogin()
+        {
+            return Util.Package<JsonResult>(new object[]{new
+            {
+                success = User.Identity.IsAuthenticated,
+                message = ""
+            }});
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ActionName("MobileLogin")]
+        public async Task<JsonResult> MobileLogin(string UserName, string Password, bool? RememberMe)
+        {
+            var errorMessage = string.Empty;
+            var accessToken = string.Empty;
+            var success = false;
+
+            var user = UserManager.Find(UserName, Password);
+           
+            if (user != null)
+            {
+                if (!UserManager.IsEmailConfirmed(user.Id)) 
+                {
+                    await SendEmailConfirmationTokenAsync(user.Id);
+
+                    errorMessage = "You must have a confirmed email to log on. "
+                                         + "An email with login instructions has been sent to your email account."
+                                        + " Please follow the instructions and login again.";
+                }
+                else
+                {
+                    accessToken = GenerateAccessToken(user, RememberMe);
+                    success = true;
+                }
+                
+            }
+            else
+            {
+                errorMessage = "Invalid Login or Password.";
+            }
+            return Util.Package<JsonResult>(new object[]{new
+            {
+                UserName = UserName,
+                AccessToken = accessToken,
+                success = success,
+                message = errorMessage
+            }});
+        }
+
+        private string GenerateAccessToken(ApplicationUser user, bool? RememberMe)
+        {
+
+            var identity = new ClaimsIdentity(Startup.OAuthBearerOptions.AuthenticationType);
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
+            identity.AddClaim(new Claim(ClaimTypes.Email, user.Email));
+
+            AuthenticationTicket ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
+            var currentUtc = new SystemClock().UtcNow;
+            ticket.Properties.IssuedUtc = currentUtc;
+            ticket.Properties.ExpiresUtc = currentUtc.Add(RememberMe.HasValue && RememberMe.Value?TimeSpan.FromDays(30): TimeSpan.FromDays(1));
+
+            var accessToken = Startup.OAuthBearerOptions.AccessTokenFormat.Protect(ticket);
+            return accessToken;
+        }
+
         //
         // GET: /Account/Login
-
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
@@ -31,69 +117,132 @@ namespace Pocket.Controllers
 
         //
         // POST: /Account/Login
-
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(LoginModel model, string returnUrl)
+        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
-            if (ModelState.IsValid && WebSecurity.Login(model.UserName, model.Password, persistCookie: model.RememberMe))
+            if (ModelState.IsValid)
             {
-                return RedirectToLocal(returnUrl);
+                var user = await UserManager.FindAsync(model.UserName, model.Password);
+                if (user != null)
+                {
+                    if (!await UserManager.IsEmailConfirmedAsync(user.Id))
+                    {
+                        string callbackUrl = await SendEmailConfirmationTokenAsync(user.Id);
+
+                        var errorMessage = "You must have a confirmed email to log on. "
+                                             + "An email with login instructions has been sent to your email account."
+                                            + " Please follow the instructions and login again.";
+                        ModelState.AddModelError("", errorMessage);
+                    }
+                    else
+                    {
+                        await SignInAsync(user, model.RememberMe);
+                        return RedirectToAction("Default", "Home"); // RedirectToLocal(returnUrl);
+                    }
+                    
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Invalid username or password.");
+                }
             }
 
             // If we got this far, something failed, redisplay form
-            ModelState.AddModelError("", "The user name or password provided is incorrect.");
             return View(model);
         }
 
         //
-        // POST: /Account/LogOff
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult LogOff()
-        {
-            WebSecurity.Logout();
-
-            return RedirectToAction("Index", "Home");
-        }
-
-        //
         // GET: /Account/Register
-
         [AllowAnonymous]
         public ActionResult Register()
         {
             return View();
         }
-
         //
         // POST: /Account/Register
-
+        //[HttpPost]
+        [AllowAnonymous]
+        public async Task<JsonResult> MRegister(RegisterViewModel model)
+        {
+            var errorMessage = string.Empty;
+            if (ModelState.IsValid)
+            {
+                if (UserManager.FindByEmail(model.Email) != null)
+                {
+                    errorMessage = "Email already registered.";
+                }
+                else
+                {
+                    var user = new ApplicationUser() { UserName = model.UserName, Email = model.Email, EmailConfirmationSent = DateTime.Today.AddDays(-2) };
+                    var result = await UserManager.CreateAsync(user, model.Password);
+                    if (result.Succeeded)
+                    {
+                        await SendEmailConfirmationTokenAsync(user.Id);
+                        Global.CreateUserDefaults(user.Id);
+                        var accessToken = GenerateAccessToken(user, false);
+                        return Util.Package<JsonResult>(new object[]{new
+                        {
+                            UserName = user.UserName,
+                            AccessToken = accessToken,
+                            success = true,
+                            message = "Congratulations!\r\nYour account is registered. You must confirm your email address to login. Please look for an email in your inbox that provides further instructions."
+                        }});
+                    }
+                    else
+                    {
+                        foreach (var item in result.Errors)
+                        {
+                            errorMessage += item;
+                        }
+                    }
+                }
+                
+            }
+            else
+            {
+                var errorList = ModelState.Values.SelectMany(m => m.Errors)
+                                 .Select(e => e.ErrorMessage)
+                                 .ToList();
+                foreach (var item in errorList)
+                {
+                    errorMessage += item;
+                }
+            }
+            return Util.Package<JsonResult>(new object[]{new
+                        {
+                            success = false,
+                            message = errorMessage
+                        }});
+        }
+        //
+        // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Register(RegisterModel model)
+        public async Task<ActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Attempt to register the user
-                try
+                if(UserManager.FindByEmail(model.Email) != null)
                 {
-                    string confirmationToken =
-                        WebSecurity.CreateUserAndAccount(model.UserName, model.Password,new{Email = model.Email, User_type=1}, true);
-                    dynamic email = new Email("RegEmail");
-                    email.To = model.Email;
-                    email.UserName = model.UserName;
-                    email.ConfirmationToken = confirmationToken;
-                    email.Send();
-
-                    return RedirectToAction("RegisterStepTwo", "Account");
+                    ModelState.AddModelError("Email", "Email already registered.");
+                    return View(model);
                 }
-                catch (MembershipCreateUserException e)
+                var user = new ApplicationUser() { UserName = model.UserName, Email = model.Email, EmailConfirmationSent = DateTime.Today.AddDays(-2) };
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
                 {
-                    ModelState.AddModelError("", ErrorCodeToString(e.StatusCode));
+                    await SendEmailConfirmationTokenAsync(user.Id);
+                    ViewBag.UserID = user.Id;
+                    return View("RegisterStepTwo");
+
+                    return RedirectToAction("Default", "Home");
+                }
+                else
+                {
+                    AddErrors(result);
                 }
             }
 
@@ -108,13 +257,76 @@ namespace Pocket.Controllers
         }
 
         [AllowAnonymous]
-        public ActionResult RegisterConfirmation(string Id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RegisterStepTwo(string userID)
         {
-            if (WebSecurity.ConfirmAccount(Id))
+            await SendEmailConfirmationTokenAsync(userID);
+            ViewBag.errorMessage = "An email with registration instructions is resent.";
+            ViewBag.UserID = userID;
+            return View();
+        }
+
+        // GET: /Account/ConfirmEmail
+        [AllowAnonymous]
+        public async Task<ActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
             {
-                return RedirectToAction("ConfirmationSuccess");
+                return View("Error");
             }
-            return RedirectToAction("ConfirmationFailure");
+            IdentityResult result;
+            var emailAlreadyConfirmed = false;
+            
+            try
+            {
+                if (await UserManager.IsEmailConfirmedAsync(userId))
+                {
+                    emailAlreadyConfirmed = true;
+                }
+                result = await UserManager.ConfirmEmailAsync(userId, code);
+            }
+            catch (InvalidOperationException ioe)
+            {
+                // ConfirmEmailAsync throws when the userId is not found.
+                ViewBag.errorMessage = ioe.Message;
+                return View("Error");
+            }
+
+            if (result.Succeeded)
+            {
+                if (!emailAlreadyConfirmed)
+                 Global.CreateUserDefaults(userId);
+                return View("ConfirmationSuccess");
+
+            }
+            
+            // If we got this far, something failed.
+            AddErrors(result);
+            ViewBag.errorMessage = "Email Confirmation failed.";
+            return View("Error");
+        }
+        private async Task<string> SendEmailConfirmationTokenAsync(string userID)
+        {
+            var callbackUrl = string.Empty;
+            ApplicationUser user = UserManager.FindById(userID); 
+            
+            if (!await UserManager.IsEmailConfirmedAsync(userID) && user.EmailConfirmationSent.Date < DateTime.Today)
+            {
+                string code = await UserManager.GenerateEmailConfirmationTokenAsync(userID);
+                callbackUrl = Url.Action("ConfirmEmail", "Account",
+                   new { userId = userID, code = code }, protocol: Request.Url.Scheme);
+                
+
+                string emailBody = string.Format( "Dear {0}, <br><br>Thanks for registering an account with us. Please confirm your account by clicking <a href=\"{1}\">here.</a>" + 
+                                        "<br/><br/>Regards<br/>" +
+                                         "{2} Team", user.UserName, callbackUrl, Global.ApplicationName);
+                await UserManager.SendEmailAsync(userID, "Welcome to " + Global.ApplicationName,emailBody );
+                user.EmailConfirmationSent = DateTime.Now;
+                await UserManager.UpdateAsync(user);
+            }
+
+            return callbackUrl;
         }
 
         [AllowAnonymous]
@@ -123,95 +335,66 @@ namespace Pocket.Controllers
             return View();
         }
 
-        [AllowAnonymous]
-        public ActionResult ConfirmationFailure()
-        {
-            return View();
-        }
-
-        //
         // POST: /Account/Disassociate
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Disassociate(string provider, string providerUserId)
+        public async Task<ActionResult> Disassociate(string loginProvider, string providerKey)
         {
-            string ownerAccount = OAuthWebSecurity.GetUserName(provider, providerUserId);
             ManageMessageId? message = null;
-
-            // Only disassociate the account if the currently logged in user is the owner
-            if (ownerAccount == User.Identity.Name)
+            IdentityResult result = await UserManager.RemoveLoginAsync(User.Identity.GetUserId(), new UserLoginInfo(loginProvider, providerKey));
+            if (result.Succeeded)
             {
-                // Use a transaction to prevent the user from deleting their last login credential
-                using (var scope = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
-                {
-                    bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
-                    if (hasLocalAccount || OAuthWebSecurity.GetAccountsFromUserName(User.Identity.Name).Count > 1)
-                    {
-                        OAuthWebSecurity.DeleteAccount(provider, providerUserId);
-                        scope.Complete();
-                        message = ManageMessageId.RemoveLoginSuccess;
-                    }
-                }
+                message = ManageMessageId.RemoveLoginSuccess;
             }
-
+            else
+            {
+                message = ManageMessageId.Error;
+            }
             return RedirectToAction("Manage", new { Message = message });
         }
 
         //
         // GET: /Account/Manage
-
         public ActionResult Manage(ManageMessageId? message)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
                 : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
                 : message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
+                : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
-            ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+            ViewBag.HasLocalPassword = HasPassword();
             ViewBag.ReturnUrl = Url.Action("Manage");
             return View();
         }
 
         //
         // POST: /Account/Manage
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Manage(LocalPasswordModel model)
+        public async Task<ActionResult> Manage(ManageUserViewModel model)
         {
-            bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
-            ViewBag.HasLocalPassword = hasLocalAccount;
+            bool hasPassword = HasPassword();
+            ViewBag.HasLocalPassword = hasPassword;
             ViewBag.ReturnUrl = Url.Action("Manage");
-            if (hasLocalAccount)
+            if (hasPassword)
             {
                 if (ModelState.IsValid)
                 {
-                    // ChangePassword will throw an exception rather than return false in certain failure scenarios.
-                    bool changePasswordSucceeded;
-                    try
-                    {
-                        changePasswordSucceeded = WebSecurity.ChangePassword(User.Identity.Name, model.OldPassword, model.NewPassword);
-                    }
-                    catch (Exception)
-                    {
-                        changePasswordSucceeded = false;
-                    }
-
-                    if (changePasswordSucceeded)
+                    IdentityResult result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+                    if (result.Succeeded)
                     {
                         return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
                     }
                     else
                     {
-                        ModelState.AddModelError("", "The current password is incorrect or the new password is invalid.");
+                        AddErrors(result);
                     }
                 }
             }
             else
             {
-                // User does not have a local password so remove any validation errors caused by a missing
-                // OldPassword field
+                // User does not have a password so remove any validation errors caused by a missing OldPassword field
                 ModelState state = ModelState["OldPassword"];
                 if (state != null)
                 {
@@ -220,14 +403,14 @@ namespace Pocket.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    try
+                    IdentityResult result = await UserManager.AddPasswordAsync(User.Identity.GetUserId(), model.NewPassword);
+                    if (result.Succeeded)
                     {
-                        WebSecurity.CreateAccount(User.Identity.Name, model.NewPassword);
                         return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
                     }
-                    catch (Exception e)
+                    else
                     {
-                        ModelState.AddModelError("", e);
+                        AddErrors(result);
                     }
                 }
             }
@@ -238,134 +421,197 @@ namespace Pocket.Controllers
 
         //
         // POST: /Account/ExternalLogin
-
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
-            return new ExternalLoginResult(provider, Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
+            // Request a redirect to the external login provider
+            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
 
         //
         // GET: /Account/ExternalLoginCallback
-
         [AllowAnonymous]
-        public ActionResult ExternalLoginCallback(string returnUrl)
+        public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
-            AuthenticationResult result = OAuthWebSecurity.VerifyAuthentication(Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
-            if (!result.IsSuccessful)
+            var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
+            if (loginInfo == null)
             {
-                return RedirectToAction("ExternalLoginFailure");
+                return RedirectToAction("Login");
             }
 
-            if (OAuthWebSecurity.Login(result.Provider, result.ProviderUserId, createPersistentCookie: false))
+            // Sign in the user with this external login provider if the user already has a login
+            var user = await UserManager.FindAsync(loginInfo.Login);
+            if (user != null)
             {
-                return RedirectToLocal(returnUrl);
-            }
-
-            if (User.Identity.IsAuthenticated)
-            {
-                // If the current user is logged in add the new account
-                OAuthWebSecurity.CreateOrUpdateAccount(result.Provider, result.ProviderUserId, User.Identity.Name);
-                //OAuthWebSecurity.CreateOrUpdateAccount(result.Provider, result.ProviderUserId, result.UserName);
+                await SignInAsync(user, isPersistent: false);
                 return RedirectToLocal(returnUrl);
             }
             else
             {
-                // User is new, ask for their desired membership name
-                string loginData = OAuthWebSecurity.SerializeProviderUserId(result.Provider, result.ProviderUserId);
-                ViewBag.ProviderDisplayName = OAuthWebSecurity.GetOAuthClientData(result.Provider).DisplayName;
+                // If the user does not have an account, then prompt the user to create an account
                 ViewBag.ReturnUrl = returnUrl;
-                return View("ExternalLoginConfirmation", new RegisterExternalLoginModel { UserName = result.UserName, ExternalLoginData = loginData });
+                ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
+                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { UserName = loginInfo.DefaultUserName, Email = loginInfo.Email });
             }
         }
 
         //
-        // POST: /Account/ExternalLoginConfirmation
+        // POST: /Account/LinkLogin
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult LinkLogin(string provider)
+        {
+            // Request a redirect to the external login provider to link a login for the current user
+            return new ChallengeResult(provider, Url.Action("LinkLoginCallback", "Account"), User.Identity.GetUserId());
+        }
 
+        //
+        // GET: /Account/LinkLoginCallback
+        public async Task<ActionResult> LinkLoginCallback()
+        {
+            var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
+            if (loginInfo == null)
+            {
+                return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
+            }
+            var result = await UserManager.AddLoginAsync(User.Identity.GetUserId(), loginInfo.Login);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Manage");
+            }
+            return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
+        }
+
+        //
+        // POST: /Account/ExternalLoginConfirmation
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult ExternalLoginConfirmation(RegisterExternalLoginModel model, string returnUrl)
+        public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
         {
-            string provider = null;
-            string providerUserId = null;
-
-            if (User.Identity.IsAuthenticated || !OAuthWebSecurity.TryDeserializeProviderUserId(model.ExternalLoginData, out provider, out providerUserId))
+            if (User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Manage");
             }
 
             if (ModelState.IsValid)
             {
-
-                try
+                // Get the information about the user from the external login provider
+                var info = await AuthenticationManager.GetExternalLoginInfoAsync();
+                if (info == null)
                 {
-                    //WebSecurity.CreateUser(new UserProfile() { UserName = model.UserName });
-                    QDbContext db = new QDbContext();
-                    User u = new Models.User();
-                    u.LoginID = model.UserName;
-                    u.Email = model.UserName;
-                    //u.FirstName = "mani";
-                    db.Users.Add(u);
-                    db.SaveChanges();
-
-                    OAuthWebSecurity.CreateOrUpdateAccount(provider, providerUserId, model.UserName);
-                    OAuthWebSecurity.Login(provider, providerUserId, createPersistentCookie: false);
+                    return View("ExternalLoginFailure");
                 }
-                catch (Exception ex)
+                var user = new ApplicationUser()
                 {
-                    ModelState.AddModelError("UserName", "User name already exists. Please enter a different user name.");
-                }
+                    UserName = model.UserName,
+                    Email = model.Email,
+                   
+                };
 
-                return RedirectToLocal(returnUrl);
+                var result = await UserManager.CreateAsync(user);
+                if (result.Succeeded)
+                {
+                    result = await UserManager.AddLoginAsync(user.Id, info.Login);
+                    if (result.Succeeded)
+                    {
+                        //Global.CreateUserDefaults(user.Id);
+                        //await SignInAsync(user, isPersistent: false);
+                        //return RedirectToLocal(returnUrl);
+                        ViewBag.UserID = user.Id;
+                        return View("RegisterStepTwo");
+                    }
+                }
+                AddErrors(result);
             }
 
-            ViewBag.ProviderDisplayName = OAuthWebSecurity.GetOAuthClientData(provider).DisplayName;
             ViewBag.ReturnUrl = returnUrl;
             return View(model);
+        }
+        
+        //
+        // POST: /Account/LogOff
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult LogOff()
+        {
+            AuthenticationManager.SignOut();
+            return RedirectToAction("Index", "Home");
         }
 
         //
         // GET: /Account/ExternalLoginFailure
-
         [AllowAnonymous]
         public ActionResult ExternalLoginFailure()
         {
             return View();
         }
 
-        [AllowAnonymous]
         [ChildActionOnly]
-        public ActionResult ExternalLoginsList(string returnUrl)
+        public ActionResult RemoveAccountList()
         {
-            ViewBag.ReturnUrl = returnUrl;
-            return PartialView("_ExternalLoginsListPartial", OAuthWebSecurity.RegisteredClientData);
+            var linkedAccounts = UserManager.GetLogins(User.Identity.GetUserId());
+            ViewBag.ShowRemoveButton = HasPassword() || linkedAccounts.Count > 1;
+            return (ActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
         }
 
-        [ChildActionOnly]
-        public ActionResult RemoveExternalLogins()
+        protected override void Dispose(bool disposing)
         {
-            ICollection<OAuthAccount> accounts = OAuthWebSecurity.GetAccountsFromUserName(User.Identity.Name);
-            List<ExternalLogin> externalLogins = new List<ExternalLogin>();
-            foreach (OAuthAccount account in accounts)
+            if (disposing && UserManager != null)
             {
-                AuthenticationClientData clientData = OAuthWebSecurity.GetOAuthClientData(account.Provider);
-
-                externalLogins.Add(new ExternalLogin
-                {
-                    Provider = account.Provider,
-                    ProviderDisplayName = clientData.DisplayName,
-                    ProviderUserId = account.ProviderUserId,
-                });
+                UserManager.Dispose();
+                UserManager = null;
             }
-
-            ViewBag.ShowRemoveButton = externalLogins.Count > 1 || OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
-            return PartialView("_RemoveExternalLoginsPartial", externalLogins);
+            base.Dispose(disposing);
         }
 
         #region Helpers
+        // Used for XSRF protection when adding external logins
+        private const string XsrfKey = "XsrfId";
+
+        private IAuthenticationManager AuthenticationManager
+        {
+            get
+            {
+                return HttpContext.GetOwinContext().Authentication;
+            }
+        }
+
+        private async Task SignInAsync(ApplicationUser user, bool isPersistent)
+        {
+            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie);
+            var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
+            AuthenticationManager.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent }, identity);
+        }
+
+        private void AddErrors(IdentityResult result)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error);
+            }
+        }
+
+        private bool HasPassword()
+        {
+            var user = UserManager.FindById(User.Identity.GetUserId());
+            if (user != null)
+            {
+                return user.PasswordHash != null;
+            }
+            return false;
+        }
+
+        public enum ManageMessageId
+        {
+            ChangePasswordSuccess,
+            SetPasswordSuccess,
+            RemoveLoginSuccess,
+            Error
+        }
+
         private ActionResult RedirectToLocal(string returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
@@ -374,73 +620,36 @@ namespace Pocket.Controllers
             }
             else
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Default", "Home");
             }
         }
-        public ActionResult Logout()
-        {
-            WebSecurity.Logout();
-            return RedirectToAction("Login", "Account");
-        }
-        public enum ManageMessageId
-        {
-            ChangePasswordSuccess,
-            SetPasswordSuccess,
-            RemoveLoginSuccess,
-        }
 
-        internal class ExternalLoginResult : ActionResult
+        private class ChallengeResult : HttpUnauthorizedResult
         {
-            public ExternalLoginResult(string provider, string returnUrl)
+            public ChallengeResult(string provider, string redirectUri)
+                : this(provider, redirectUri, null)
             {
-                Provider = provider;
-                ReturnUrl = returnUrl;
             }
 
-            public string Provider { get; private set; }
-            public string ReturnUrl { get; private set; }
+            public ChallengeResult(string provider, string redirectUri, string userId)
+            {
+                LoginProvider = provider;
+                RedirectUri = redirectUri;
+                UserId = userId;
+            }
+
+            public string LoginProvider { get; set; }
+            public string RedirectUri { get; set; }
+            public string UserId { get; set; }
 
             public override void ExecuteResult(ControllerContext context)
             {
-                OAuthWebSecurity.RequestAuthentication(Provider, ReturnUrl);
-            }
-        }
-
-        private static string ErrorCodeToString(MembershipCreateStatus createStatus)
-        {
-            // See http://go.microsoft.com/fwlink/?LinkID=177550 for
-            // a full list of status codes.
-            switch (createStatus)
-            {
-                case MembershipCreateStatus.DuplicateUserName:
-                    return "User name already exists. Please enter a different user name.";
-
-                case MembershipCreateStatus.DuplicateEmail:
-                    return "A user name for that e-mail address already exists. Please enter a different e-mail address.";
-
-                case MembershipCreateStatus.InvalidPassword:
-                    return "The password provided is invalid. Please enter a valid password value.";
-
-                case MembershipCreateStatus.InvalidEmail:
-                    return "The e-mail address provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.InvalidAnswer:
-                    return "The password retrieval answer provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.InvalidQuestion:
-                    return "The password retrieval question provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.InvalidUserName:
-                    return "The user name provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.ProviderError:
-                    return "The authentication provider returned an error. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
-
-                case MembershipCreateStatus.UserRejected:
-                    return "The user creation request has been canceled. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
-
-                default:
-                    return "An unknown error occurred. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
+                var properties = new AuthenticationProperties() { RedirectUri = RedirectUri };
+                if (UserId != null)
+                {
+                    properties.Dictionary[XsrfKey] = UserId;
+                }
+                context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
             }
         }
         #endregion

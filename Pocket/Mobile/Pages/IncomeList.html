@@ -1,0 +1,75 @@
+
+
+<div class="pages">
+	<div data-page="incomelist" class="page incomelist-page" data-pg-controller="income" data-pg-init="initlist">
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left"><a href="#" class="link icon-only open-panel"><i class="icon icon-bars"></i></a></div>
+        <div class="center sliding incomes-list-header" style="left:22px">Income List</div>
+        <div class="right">
+            <a href="Pages/Income.html" class="link icon-only"><i class="icon icon-plus">+</i></a>
+        </div>
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar searchbar-init" data-search-list=".incomes-list" data-search-in=".item-subtitle" data-found=".searchbar-found" data-not-found=".searchbar-not-found">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content infinite-scroll" data-distance="100">
+            <div class="list-block accordion-list">
+                <ul>
+                    <li class="accordion-item">
+                        <a href="#" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-funnel"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Filter</div>
+                            </div>
+                        </a>
+                        <div class="accordion-item-content">
+                            <div class="content-block">
+                                <ul>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title label">From</div>
+                                                <div class="item-input">
+                                                    <input type="date" name="IncomeFrom" class=" income-from-date" placeholder="From" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title label">To</div>
+                                                <div class="item-input">
+                                                    <input type="date" name="IncomeTo" class=" income-to-date" placeholder="To" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- This block will be displayed if nothing found -->
+            <div class="content-block searchbar-not-found">
+                <div class="content-block-inner">No Income found</div>
+            </div>
+
+            <div class="list-block media-list incomes-list searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+	</div>
+</div>

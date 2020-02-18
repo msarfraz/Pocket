@@ -1,0 +1,27 @@
+{{#.}}
+<div class="messages-date">{{CDate}}</div>
+{{#each Comments}}
+{{#if IsSent}}
+<!-- Sent message (by default - green and on right side) -->
+<div class="message message-sent">
+    <!-- Bubble with text -->
+    <div class="message-text">{{Comment}}</div>
+</div>
+{{else}}
+
+ <!-- Received message (by default - grey on left side) -->
+<div class="message message-received">
+    <!-- Sender name -->
+    <div class="message-name">{{UserName}}</div>
+
+    <!-- Bubble with text -->
+    <div class="message-text">{{Comment}}</div>
+
+    <div class="message-label">{{UserName}}</div>
+    
+</div>
+{{/if}}
+
+{{/each}}
+
+{{/.}}

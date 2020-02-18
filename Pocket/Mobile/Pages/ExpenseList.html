@@ -1,0 +1,89 @@
+
+
+<div class="pages">
+	<div data-page="expenselist" class="page expenselist-page" data-pg-controller="expense" data-pg-init="initlist">
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left"><a href="#" class="link icon-only open-panel"><i class="icon icon-bars"></i></a></div>
+        <div class="center sliding expenses-list-header" style="left:22px">Expenses</div>
+        <div class="right">
+            <a href="Pages/Expense.html" class="link icon-only"><i class="icon icon-plus">+</i></a>
+        </div>
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar searchbar-init" data-search-list=".expenses-list" data-search-in=".item-title" data-found=".searchbar-found" data-not-found=".searchbar-not-found">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content infinite-scroll expense-infinite-scroll" data-distance="100">
+            <div class="list-block accordion-list">
+                <ul>
+                    <li class="accordion-item">
+                        <a href="#" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-funnel"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Filter</div>
+                            </div>
+                        </a>
+                        <div class="accordion-item-content">
+                            <div class="list-block">
+                                <ul>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title label">From</div>
+                                                <div class="item-input">
+                                                    <input type="date" name="ExpenseFrom" class="expense-from-date" placeholder="From" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title label">To</div>
+                                                <div class="item-input">
+                                                    <input type="date" name="ExpenseTo" class="expense-to-date" placeholder="To" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title label">Contacts</div>
+                                                <div class="item-input">
+                                                    <label class="label-switch disabled">
+                                                        <input type="checkbox" class="disabled expense-all-users" name="ExpenseAllUsers">
+                                                        <div class="checkbox"></div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- This block will be displayed if nothing found -->
+            <div class="content-block searchbar-not-found">
+                <div class="content-block-inner">No Expense found</div>
+            </div>
+
+            <div class="list-block media-list expenses-list searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+        
+	</div>
+</div>

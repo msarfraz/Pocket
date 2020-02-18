@@ -1,10 +1,182 @@
 ﻿
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = Pocket.Common.Global.ApplicationName;
+    Layout = "~/Views/Shared/_SiteLayout.cshtml";
 }
+<style>
+    .input-group-addon {
+        min-width: 180px;
+        text-align: right;
+    }
+</style>
+<!-- Carousel
+    ================================================== -->
+<div id="myCarousel" class="carousel slide" data-ride="carousel">
+    <!-- Indicators -->
+    <ol class="carousel-indicators">
+        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#myCarousel" data-slide-to="1"></li>
+        <li data-target="#myCarousel" data-slide-to="2"></li>
+        <li data-target="#myCarousel" data-slide-to="3"></li>
+    </ol>
+    <div class="carousel-inner">
+        <div class="item active">
+            <img src="~/images/trackExpenses.jpg" class="img-responsive">
+            <div class="container">
+                <div class="carousel-caption">
+                    <h1>
+                        <em> <strong>Track Expenses</strong></em>
+                    </h1>
+                    <p><em>Track your expenses and income by our simple & intutive application and manage your money easily</em></p>
+                    <p><a class="btn btn-lg btn-primary" href="#track" role="button">Learn More</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <img src="~/images/10.jpg" class="img-responsive">
+            <div class="container">
+                <div class="carousel-caption">
+                    <h1><em>Plan Budget</em></h1>
+                    <p><em>Create your daily, weekly, monthly, quarterly or yearly budgets to control your expenses</em></p>
+                    <p><a class="btn btn-lg btn-primary" href="#plan" role="button">Learn more</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <img src="~/images/9.jpg" class="img-responsive">
+            <div class="container">
+                <div class="carousel-caption">
+                    <h1><em>Analyze Expenses</em></h1>
+                    <p><em>Analyze your income & expenses using our specialized reports and charts</em></p>
+                    <p><a class="btn btn-lg btn-primary" href="#charts" role="button">Learn more</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <img src="~/images/8.jpg" class="img-responsive">
+            <div class="container">
+                <div class="carousel-caption">
+                    <h1><em>Save Money!!!</em></h1>
+                    <p><em>Reduce your expenses based on the analysis and <strong>SAVE MONEY!!!</strong></em></p>
+                    <p><a class="btn btn-lg btn-success" href="~/Account/Register" role="button">Register Now</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev"><span class="glyphicon glyphicon-chevron-left"></span></a>
+    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next"><span class="glyphicon glyphicon-chevron-right"></span></a>
+</div><!-- /.carousel -->
+<!-- Marketing messaging and featurettes
+================================================== -->
+<!-- Wrap the rest of the page in another container to center all the content. -->
+
+<div class="container">
+
+    <!-- Three columns of text below the carousel -->
+    @*<div class="row">
+        <div class="col-lg-4">
+            <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" style="width: 140px; height: 140px;">
+            <h2>Heading</h2>
+            <p>Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod. Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna.</p>
+            <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+        </div><!-- /.col-lg-4 -->
+        <div class="col-lg-4">
+            <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" style="width: 140px; height: 140px;">
+            <h2>Heading</h2>
+            <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh.</p>
+            <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+        </div><!-- /.col-lg-4 -->
+        <div class="col-lg-4">
+            <img class="img-circle" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Generic placeholder image" style="width: 140px; height: 140px;">
+            <h2>Heading</h2>
+            <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+            <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+        </div><!-- /.col-lg-4 -->
+    </div>*@
+    <!-- /.row -->
+    <!-- START THE FEATURETTES -->
+
+    
+    <hr />
+    <h3> Experience Xpert Budget on Mobile </h3>
+    <a href="https://itunes.apple.com/app/id954158513" class="img-rounded"><img src="~/images/app-store.png" /></a>
+    <a href="#" class="img-rounded"><img src="~/images/google_play.png" title="Coming soon..." /></a>
+    <hr />
+
+    <!-- Project One -->
+    <div class="row" id="track">
+        <div class="col-md-7">
+            <a href="#">
+                <img class="img-responsive" src="~/images/add_income.png" alt="">
+            </a>
+        </div>
+        <div class="col-md-5">
+            <h3>Expense Tracking</h3>
+            <h4>No need to fill complex forms.</h4>
+            <p>Now it's easy then ever to store your expenses in application. There is no need to fill & submit forms. All you need to do is to use a simple excel like view and fill the expenses quickly.</p>
+            <a class="btn btn-primary" href="#">Register Now <span class="glyphicon glyphicon-chevron-right"></span></a>
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <hr/>
+
+    <!-- Project One -->
+    <div class="row" id="plan">
+        <div class="col-md-7">
+            <h3>Planning </h3>
+            <h4>Plan your goals, upcoming events and budget</h4>
+            <p>
+
+                <ul>
+                    <li>
+                        You can create budgets for your monthly/weekly/daily expenses so that you are notified whenever your expenses cross your budget.
+                    </li>
+               
+                    <li>
+                        Configure your upcoming events like birthday, wedding anniversary
+                        or new year party. The friends can share the expense details of a shared event with each other and application will calculate the contributions of each friend.
+                        Events also helps to handle any upcoming expected expense.
+                    </li>
+                    <li>
+                        Our application helps you to setup your future goals like Home, Car or new Mobile etc. and monitor the progress towards your goals.
+                        It also helps you to find how can you achieve your goals by changing your savings pattern.
+                    </li>
+                </ul>
+                
+                    
+                    
+            </p>
+            <a class="btn btn-primary" href="#">Register Now <span class="glyphicon glyphicon-chevron-right"></span></a>
+        </div>
+        <div class="col-md-5">
+            <a href="#">
+                <img class="img-responsive" src="~/images/category_report.png" alt="">
+            </a>
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <hr />
+    <!-- charts -->
+    <div class="row" id="charts">
+        <div class="col-md-7">
+            <a href="#">
+                <img class="img-responsive" src="~/images/charts.png" alt="">
+            </a>
+        </div>
+        <div class="col-md-5">
+            <h3>Reports, Charts and Account statements </h3>
+            <h4>View all the details in visual form to analyze if you are on-track.</h4>
+            <p>
+                Use our specialized reports & charts to analyze your money flow.
+            </p>
+            <a class="btn btn-primary" href="#">Register Now <span class="glyphicon glyphicon-chevron-right"></span></a>
+        </div>
+    </div>
+    <!-- /.row -->
+
+   
 
 
-<h2>Index</h2>
-
-<h3>welcome </h3> <h4>@WebSecurity.CurrentUserName</h4>
-
+    </div>

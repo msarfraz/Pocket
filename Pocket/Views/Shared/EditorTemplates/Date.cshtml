@@ -1,5 +1,5 @@
 ﻿@model Nullable<DateTime>
-
+@using Pocket.Common
  @{
     DateTime dt = DateTime.Now;
     if (Model != null)
@@ -7,5 +7,5 @@
        dt  = (System.DateTime) Model;
    
     }
-    @Html.TextBox("", String.Format("{0:d}", dt.ToShortDateString()), new { @class = "datefield", type = "date"  })
+    @Html.TextBox("", String.Format("{0:d}", dt.ToDateString()), new { @class = "datefield", type = "date"  })
 } 

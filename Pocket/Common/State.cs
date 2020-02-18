@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Security.DataProtection;
+using Microsoft.Owin.Helpers;
 
 namespace Pocket.Common
 {
+    
     public enum UserType
     {
         FB = 1,
@@ -14,17 +18,22 @@ namespace Pocket.Common
 
     public class State
     {
-        public static int UserID { get; set; }
         static State()
         {
-            UserID = 1;
+            
         }
-
+        public static string UserID
+        {
+            get
+            {
+                return HttpContext.Current.User.Identity.GetUserId();
+            }
+        }
         public static string CurrentUserName
         {
             get
             {
-                return "Admin admin";
+                return HttpContext.Current.User.Identity.GetUserName();
             }
         }
     }

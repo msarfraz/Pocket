@@ -1,0 +1,46 @@
+﻿@model IEnumerable<Pocket.Models.Schedule>
+
+@{
+    ViewBag.Title = "Customer Requests";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/Common.js"></script>
+
+<p>
+
+<button type="button" onclick="ProcessSchedules()" class="btn btn-primary"><span class="glyphicon glyphicon-refresh"></span> Process</button>
+</p>
+
+<table id="rowed2"></table>
+<div id="prowed2"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['ScheduleID', 'Name', 'Last Run', 'Next Run', 'Status', 'Created Date', 'Type'];
+    var colModel = [
+        { name: 'ScheduleID', index: 'ScheduleID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100 },
+        { name: 'LastRunDate', index: 'LastRunDate', width: 100 },
+        { name: 'NextRunDate', index: 'NextRunDate', width: 100 },
+        { name: 'Status', index: 'Status', width: 100 },
+        { name: 'CreatedDate', index: 'CreatedDate', width: 100 },
+        { name: 'Type', index: 'Type', width: 100 }
+
+
+    ];
+    createJQGrid('/schedule/jindex', colNames, colModel, 'ScheduleID', "", "Schedule List", "#rowed2", '#prowed2', null, { sidx: 'NextRunDate' });
+
+    function ProcessSchedules()
+    {
+        PostData("/schedule/ProcessSchedules", { }, function (response) {
+            $("#rowed2").jqGrid().trigger('reloadGrid');
+            $("#prowed2").jqGrid().trigger('reloadGrid');
+        });
+    }
+    </script>
+

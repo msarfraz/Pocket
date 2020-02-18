@@ -1,69 +1,105 @@
 ﻿@model Tuple<List<Pocket.Models.Event>, List<Pocket.Models.Event>, int?,int?>
 
 @{
-    ViewBag.Title = "List";
+    ViewBag.Title = "Events Report";
 }
 
 <link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
 <link href="~/Content/themes/redmond/jquery.ui.datepicker.css" rel="stylesheet" />
 <link href="~/Content/themes/redmond/jquery.ui.dialog.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-select.min.css" rel="stylesheet" />
 
 <script src="~/Scripts/grid.locale-en.js"></script>
-<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
 <script src="~/Scripts/QIE/JqGrid.js"></script>
 <script src="~/Scripts/QIE/DatePickerReady.js"></script>
-
-<br />
+<script src="~/Scripts/bootstrap-select.min.js"></script>
 <p>
-    
-    <label for="EventID">Select Event:</label> 
-    <select name="EventID" id="EventID" onclick="ReloadGrid()">
-        <optgroup label="My Events"/>
-        @foreach (var item in Model.Item1)
-        {
-            <option label="@item.Name" value="@item.EventID" />
-        }
-        <optgroup label="Friends Events"/>
-        @foreach (var item in Model.Item2)
-        {
-            <option label="@item.Name" value="@item.EventID" />
-        }
+    <div class="row">
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">Event:</span>
+                <select name="EventID" id="EventID" onchange="ReloadGrid()" class="selectpicker">
+                    @foreach (var ev in Model.Item1)
+                    {
+                        <option value="@ev.EventID">@ev.Name</option>
 
-    </select>
+                    }
+                    @if (Model.Item2.Count > 0)
+                    {
+
+                        <option data-divider="true"></option>
+                    }
+                    @foreach (var ev in Model.Item2)
+                    {
+                        <option value="@ev.EventID" data-subtext="@ev.User.UserName">@ev.Name</option>
+
+                    }
+
+                   
+                </select>
+
+            </div>
+
+        </div>
+        </div>
+        
 </p>
 
 <table id="rowed2"></table>
 <div id="prowed2"></div>
+<br/>
+<table id="lstShares"></table>
+<div id="pgrShares"></div>
+
 <div>
     @Html.AntiForgeryToken()
 </div>
 <script type="text/javascript">
-    var colNames = ['ExpenseID', 'Expense Date', 'Category', 'Account', 'Amount', 'Payee', 'Vendor', 'Comments'];
+    var colNames = ['ExpenseID', 'Expense Date', 'Category', 'Account', 'Amount', 'Payee', 'Vendor', 'Comments', 'User'];
     var colModel = [
         { name: 'ExpenseID', index: 'ExpenseID', width: 55, key: true, hidden: true },
-        { name: 'ExpenseDate', index: 'ExpenseDate', width: 100, sorttype: "date", datefmt: 'mm/dd/yyyy'},
-        { name: 'SubcategoryID', index: 'SubcategoryID', width: 100},
-        { name: 'AccountID', index: 'AccountID', width: 100},
+        { name: 'ExpenseDate', index: 'ExpenseDate', width: 100, sorttype: "date", datefmt: 'mm/dd/yyyy' },
+        { name: 'SubcategoryID', index: 'SubcategoryID' },
+        { name: 'AccountID', index: 'AccountID', width: 100 },
         { name: 'Amount', index: 'Amount', width: 100 },
         { name: 'PayeeID', index: 'PayeeID', width: 100 },
         { name: 'VendorID', index: 'VendorID', width: 100 },
-        { name: 'Comments', index: 'Comments', width: 100, editable: false, formatter: CommentFormatter }
-
+        { name: 'Comments', index: 'Comments', width: 100, editable: false, formatter: CommentFormatter },
+        { name: 'UserID', index: 'UserID', width: 100 }
     ];
+    $('.selectpicker').selectpicker();
+
     var selEventID = '@(Model.Item3.HasValue?Model.Item3.Value:0)';
-    if (selEventID != '0')
-        $("#EventID").val(selEventID);
-    
-    function ReloadGrid() {
-        jQuery("#rowed2").jqGrid().trigger("reloadGrid");
+    if (selEventID != '0') {
+        //$('#EventID').selectpicker('val', selEventID);
+        $('#EventID').val(selEventID);
+        $('#EventID').selectpicker('render');
     }
 
-   
+
+    function ReloadGrid() {
+        jQuery("#rowed2").jqGrid().trigger("reloadGrid");
+        jQuery("#lstShares").jqGrid().trigger("reloadGrid");
+    }
+
+
     var postData = {};
     postData["EventID"] = function () { return $("#EventID").val() };
 
     createJQGrid('/report/JEventReport', colNames, colModel, 'ExpenseID', "", "Expense List", "#rowed2", '#prowed2', postData, { addgrid: false, editgrid: false });
 
+    /////////////////////
+    //   Event Share
+    ///////////////////////
+    var shareColNames = ['UserID', 'Name', 'Amount'];
+    var shareColModel = [
+        { name: 'UserID', index: 'UserID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100 },
+        { name: 'Amount', index: 'Amount', width: 100 }
+
+    ];
+    createJQGrid('/report/JEventShareReport', shareColNames, shareColModel, 'UserID', "", "Contributions", "#lstShares", '#pgrShares', postData, { addgrid: false, editgrid: false });
 
  /////////////////////
     //   Expense Comments
@@ -73,7 +109,7 @@
         // format the cellvalue to new format
 
         if (cellvalue && cellvalue.length > 0) {
-            var tag = "<a href='#' onclick='ShowComments(" + rowObject[0] + ")'>" + cellvalue + "</a>";
+            var tag = "<a href='#' onclick='ShowComments(" + rowObject[0] + ")'>" + cellvalue + " <span class='glyphicon glyphicon-comment'></span></a>";
             return tag;
         }
         else
@@ -86,46 +122,47 @@
 
         if (firsttime)
         {
-            dialog = $("#commentsDialog").dialog({
-                autoOpen: false,
-                height: 400,
-                width: 450,
-                show: {
-                    effect: "blind",
-                    duration: 1000
-                }
-            });
-            dialog.dialog("open");
+            $("#commentsModal").modal('show');
+
             var commPostData = {};
             commPostData["ExpenseID"] = function () { return $("#hdnExpenseID").val() };
 
             createJQGrid('/expense/JExpenseComments', commColNames, commColModel, 'CommentID', "/expense/jcommentedit", "Add/View Comments", "#lstComments", '#pgrComments', commPostData, { sidx: 'CommentID', sord: 'desc',editgrid:false, editExtraParams: { ExpenseID: function () { return $("#hdnExpenseID").val() } } });
             firsttime = false;
         }
-        dialog.dialog("open");
+        $("#commentsModal").modal('show');
         jQuery("#lstComments").jqGrid().trigger("reloadGrid");
     }
     var commColNames = ['CommentID','ExpenseID', 'Comment', 'By', 'Date'];
     var commColModel = [
-        { name: 'CommentID', index: 'CommentID', width: 55, key: true, hidden: true },
-        { name: 'ExpenseID', index: 'ExpenseID', width: 55, hidden: true },
-        { name: 'Comment', index: 'Comment', width: 155, key: true, editable: true, edittype: "textarea", editoptions: { rows: "3", cols: "25" } },
-        { name: 'UserID', index: 'UserID', width: 55, editable: false },
-        { name: 'CommentDate', index: 'CommentDate', width: 55, editable: false }
+        { name: 'CommentID', index: 'CommentID', key: true, hidden: true },
+        { name: 'ExpenseID', index: 'ExpenseID', hidden: true },
+        { name: 'Comment', index: 'Comment', width: 300, key: true, editable: true, edittype: "textarea", editoptions: { rows: "5", cols: "40" } },
+        { name: 'UserID', index: 'UserID', editable: false },
+        { name: 'CommentDate', index: 'CommentDate', width: 75, editable: false }
     ];
     var firsttime = true;
-    var dialog;
+
     $(document).ready(function () {
         var selExpenseID = '@(Model.Item4.HasValue?Model.Item4.Value:0)';
         if (selExpenseID != '0') {
             ShowComments(selExpenseID);
         }
     });
-    
+
     </script>
 <input type="hidden" id="hdnExpenseID" />
-<div id="commentsDialog" title="Comments">
-    <table id="lstComments" style="height:100%"></table>
-    <div id="pgrComments"></div>
-
+<div id="commentsModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title">Comments</h5>
+            </div>
+            <div class="modal-body">
+                <table id="lstComments" style="height:100%"></table>
+                <div id="pgrComments"></div>
+            </div>
+        </div>
+    </div>
 </div>

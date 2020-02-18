@@ -1,72 +1,173 @@
-﻿@model Tuple<DotNet.Highcharts.Highcharts, DotNet.Highcharts.Highcharts, IEnumerable<SelectListItem>> 
+﻿@model Pocket.ViewModels.ChartData 
 
 @{
-    ViewBag.Title = "CategoryChart";
+    ViewBag.Title = "Subcategories Chart";
 }
-<script src="~/Scripts/QIE/Common.js"></script>
-<script src="~/Scripts/Highcharts-4.0.1/js/highcharts.src.js"></script>
-<script src="~/Scripts/Highcharts-4.0.1/js/highcharts-more.src.js"></script>
-<script src="~/Scripts/Highcharts-4.0.1/js/highcharts-3d.src.js"></script>
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+<script src="~/Scripts/Highcharts-4.1.5/js/highcharts.js"></script>
+
+<link href="~/Content/bootstrap-select.min.css" rel="stylesheet" />
+<style>
+    .input-group .bootstrap-select {
+z-index: inherit !important;
+}
+</style>
+
 <br />
 
 <p>
-    <label for="ddlCategory" >Category</label>
-
-        @Html.DropDownList("ddlCategory", Model.Item3, new { onchange = "ReloadChart()" })
     
-    <label for="ddlMonth">Month:</label>
-    <select name="ddlMonth" id="ddlMonth" onchange="ReloadChart()">
-        <option value="1" label="January" />
-        <option value="2" label="February" />
-        <option value="3" label="March" />
-        <option value="4" label="April" />
-        <option value="5" label="May" />
-        <option value="6" label="June" />
-        <option value="7" label="July" />
-        <option value="8" label="August" />
-        <option value="9" label="September" />
-        <option value="10" label="October" />
-        <option value="11" label="November" />
-        <option value="12" label="December" />
-    </select>
-    <select name="ddlYear" id="ddlYear" onchange="ReloadChart()">
-        @for (int i = 2001; i < 2020; i++)
-        {
-            <option value="@i" label="@i" />
-        }
-    </select>
+    <div class="row">
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon input-group-addon-bootstrap-select">Category:</span>
+
+                <select id="ddlCategory" name="ddlCategory" class="selectpicker" data-style="btn btn-default form-control" onchange="LoadChart()">
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <option value="@cat.CategoryID">@cat.Name</option>
+                    }
+                    <option data-divider="true"></option>
+                    @foreach (var cat in Model.OtherCategories)
+                    {
+                        <option value="@cat.CategoryID" data-subtext="@cat.User.UserName">@cat.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">Month:</span>
+                <select name="ddlMonth" id="ddlMonth" onchange="LoadChart()" class="form-control">
+                    <option value="1" label="January" />
+                    <option value="2" label="February" />
+                    <option value="3" label="March" />
+                    <option value="4" label="April" />
+                    <option value="5" label="May" />
+                    <option value="6" label="June" />
+                    <option value="7" label="July" />
+                    <option value="8" label="August" />
+                    <option value="9" label="September" />
+                    <option value="10" label="October" />
+                    <option value="11" label="November" />
+                    <option value="12" label="December" />
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">Year:</span>
+                <select name="ddlYear" id="ddlYear" onchange="LoadChart()" class="form-control">
+                    @for (int i = 2001; i < 2020; i++)
+                    {
+                        <option value="@i" label="@i" />
+                    }
+                </select>
+            </div>
+        </div>
+        
+    </div>
     @Html.AntiForgeryToken()
 </p>
 
-@(Model.Item2)
 
-
-<a href="#" onclick="$('#detailsDiv').toggle('slow')">Details</a>
-<div id="detailsDiv">
-    @(Model.Item1)
+<div id="chartcolumn">
 
 </div>
+<br />
+<div id="chartpie">
 
+</div>
 <script>
     $("#ddlMonth").val('@DateTime.Today.Month');
     $("#ddlYear").val('@DateTime.Today.Year');
-    $('#detailsDiv').toggle(false);
 
-    function ReloadChart()
-    {
-        PostData("/Chart/SubcatChartData", { Month: $("#ddlMonth").val(), Year: $("#ddlYear").val(), CategoryID: $("#ddlCategory").val() }, function (response) {
-            piechart.series[0].setData(response[0], true);
+    $('#ddlCategory').selectpicker();
 
-            colchart.series[0].setData(response[1], true);
-            colchart.series[1].setData(response[2], true);
-            colchart.series[2].setData(response[0], true);
-            colchart.xAxis[0].setCategories(response[3], true);
-           
+    function LoadChart() {
+
+        PostData("/Chart/JSubcategoryChartData", { Month: $("#ddlMonth").val(), Year: $("#ddlYear").val(), CategoryID: $("#ddlCategory").val() }, function (response) {
+            var d = response.rows;
+
+            $('#chartcolumn').highcharts({
+                chart: {
+                    type: 'bar'
+                },
+                title: {
+                    text: 'Budget and Expense'
+                },
+                subtitle: {
+                    text: 'Subcategory view'
+                },
+                xAxis: {
+                    categories: d.categories,
+                    title: {
+                        text: null
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Amount',
+                        align: 'high'
+                    },
+                    labels: {
+                        overflow: 'justify'
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        dataLabels: {
+                            enabled: true
+                        }
+                    }
+                },
+
+                credits: {
+                    enabled: false
+                },
+                series: d.series
+            });
+
+            var p = toPieData(d);
+
+            $('#chartpie').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                title: {
+                    text: 'Subcategories'
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Subcategories share',
+                    data: p
+                }]
+            });
+
         });
-        
-        
-    }
 
+    }
+    LoadChart();
 </script>
 
 

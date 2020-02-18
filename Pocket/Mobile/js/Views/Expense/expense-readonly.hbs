@@ -1,0 +1,134 @@
+    
+        <div class="list-block">
+            <ul>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-calendar-outline color-form-icon"></i></div>
+                        <div class="item-inner">
+                                <div class="item-title">Date</div>
+                                <div class="item-after">{{#to_date model.ExpenseDateText}}{{/to_date}}</div>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-briefcase color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title">Account</div>
+                            <div class="item-after">{{model.AccountText}} </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-android-folder color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title">Category</div>
+                            <div class="item-after">{{model.CategoryText}} </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-filing color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title">Subcategory</div>
+                            <div class="expense-subcategory-text item-after">{{model.SubcategoryText}} </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-social-usd color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title">Amount</div>
+                            <div class="item-after">
+                                {{model.Amount}}
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <a href="Pages/ExCommentList.html?expenseid={{model.ExpenseID}}" class="item-link item-content">
+                        <div class="item-media"><i class="icon ion-chatbubble color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title">Comments</div>
+                            <div class="item-after"><span class="badge">{{model.Comments}}</span> </div>
+                        </div>
+                    </a>
+
+                </li>
+
+            </ul>
+            </div>
+            <div class="content-block-title">Additional Details</div>
+            <div class="list-block accordion-list">
+                <ul>
+                    <li class="accordion-item">
+                        <a href="#" class="item-content item-link">
+                            <div class="item-inner">
+                                <div class="item-title">Expense Details</div>
+                            </div>
+                        </a>
+                        <div class="accordion-item-content">
+                            <div class="content-block">
+                                <ul>
+
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="icon ion-refresh color-form-icon"></i></div>
+                                            <div class="item-inner">
+                                                <div class="item-title">Repeat</div>
+                                                <div class="item-after">{{model.RepeatText}} </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="icon ion-speakerphone color-form-icon"></i></div>
+                                            <div class="item-inner">
+                                                <div class="item-title">Event</div>
+                                                <div class="item-after">{{model.EventText}} </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="icon ion-ios-person color-form-icon"></i></div>
+                                            <div class="item-inner">
+                                                <div class="item-title">Payee</div>
+                                                <div class="item-after">{{model.PayeeText}} </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="icon ion-ios-location color-form-icon"></i></div>
+                                            <div class="item-inner">
+                                                <div class="item-title">Vendor</div>
+                                                <div class="item-after">{{model.VendorText}} </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="icon ion-ios-list-outline color-form-icon"></i></div>
+                                            <div class="item-inner">
+                                                <div class="item-title label">Description</div>
+                                                <div class="item-text">
+                                                    {{model.Description}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+
+                </ul>
+            </div>
+
+

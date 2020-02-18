@@ -1,0 +1,83 @@
+
+
+<div class="pages">
+    <div data-page="chartcat" class="page chartcat-page" data-pg-controller="chart" data-pg-init="init">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left"><a href="#" class="link icon-only open-panel"><i class="icon icon-bars"></i></a></div>
+                <div class="center sliding Chart-cat-header" style="left:22px">Charts</div>
+                <div class="right">
+                </div>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="">
+                <!-- Buttons row as tabs controller -->
+                <div class="buttons-row theme-black">
+                    <!-- Link to 1st tab, active -->
+                    <a href="#" class="button button-round button-raised active cat-chart">Categories</a>
+                    <!-- Link to 2nd tab -->
+                    <a href="#" class="button button-round button-raised subcat-chart">Subcategories</a>
+                    <!-- Link to 3rd tab -->
+                    <a href="#" class="button button-round button-raised event-chart">Events</a>
+
+                </div>
+
+
+            </div>
+            
+
+            <div class="list-block accordion-list">
+                <ul>
+                    <li class="accordion-item">
+                        <a href="#" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-funnel"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Filter</div>
+                            </div>
+                        </a>
+                        <div class="accordion-item-content">
+                            <div class="content-block">
+                                <ul>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title label">Month</div>
+                                                <div class="item-input">
+                                                    <input type="month" name="ChartDate" class="item-input chart-date" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="chart-category-list-filter">
+                                        <!-- Additional "smart-select" class -->
+                                        <a href="#" class="item-link smart-select" data-back-on-select="true">
+                                            <!-- select -->
+                                            <select name="ChartCategoryID" class="chart-category-list"></select>
+                                            <div class="item-content">
+                                                <div class="item-inner">
+                                                    <!-- Select label -->
+                                                    <div class="item-title">Category</div>
+                                                    <!-- Selected value, not required -->
+                                                    <div class="item-after"></div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="chartarea" class="chart-column-area" style="min-width:300px;min-height:450px">
+            </div>
+
+            <div id="piearea" class="chart-pie-area" style="min-width:300px;min-height:450px">
+            </div>
+
+            
+        </div>
+    </div>
+</div>

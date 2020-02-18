@@ -1,0 +1,187 @@
+<li>
+    <div class="item-content">
+        <div class="item-inner">
+            <div class="item-title label">From</div>
+            <div class="item-input">
+                <input type="date" name="ExpenseFilterFrom" class="filter-from-date" placeholder="From" />
+            </div>
+        </div>
+    </div>
+</li>
+<li>
+    <div class="item-content">
+        <div class="item-inner">
+            <div class="item-title label">To</div>
+            <div class="item-input">
+                <input type="date" name="ExpenseFilterTo" class="filter-to-date" placeholder="To" />
+            </div>
+        </div>
+    </div>
+</li>
+<li>
+    <div class="item-content">
+        <div class="item-inner">
+            <div class="item-title label">Contacts</div>
+            <div class="item-after">
+                <label class="label-switch disabled">
+                    <input type="checkbox" checked="checked" class="disabled filter-all-users" name="ExpenseFilterAllUsers">
+                    <div class="checkbox" ></div>
+                </label>
+            </div>
+        </div>
+    </div>
+</li>
+	<li>
+    <!-- Additional "smart-select" class -->
+    <a href="#" class="item-link smart-select" data-back-on-select="true">
+        <!-- select -->
+        <select name="ExpenseFilterCategoryID" class="filter-category-list">
+            <option value=""></option>
+            {{#each model.Categories}}
+            {{#unless Name}}
+            {{#each Categories}}
+            <option value="{{CategoryID}}">{{Name}}</option>
+            {{/each}}
+            {{else}}
+            <optgroup label="{{Name}}">
+                {{#each Categories}}
+                <option value="{{CategoryID}}">{{Name}}</option>
+                {{/each}}
+            </optgroup>
+            {{/unless}}
+            {{/each}}
+
+            
+        </select>
+        <div class="item-content">
+            <div class="item-inner">
+                <!-- Select label -->
+                <div class="item-title">Category</div>
+                <!-- Selected value, not required -->
+                <div class="item-after"> </div>
+            </div>
+        </div>
+    </a>
+</li>
+<li>
+    <!-- Additional "smart-select" class -->
+    <a href="#" class="expense-subcategory-link item-link smart-select" data-back-on-select="true">
+        <!-- select -->
+        <select name="ExpenseFilterSubcategoryID" class="filter-subcategory-list">
+            <option value=""></option>
+            {{#each model.Subcategories}}
+            <option value="{{SubcategoryID}}">{{Name}}</option>
+            {{/each}}
+        </select>
+        <div class="item-content">
+            <div class="item-inner">
+                <!-- Select label -->
+                <div class="item-title">Subcategory</div>
+                <!-- Selected value, not required -->
+                <div class="filter-subcategory-text item-after"> </div>
+            </div>
+        </div>
+    </a>
+</li>
+<li>
+    <!-- Additional "smart-select" class -->
+    <a href="#" class="item-link smart-select" data-back-on-select="true">
+        <!-- select -->
+        <select name="ExpenseFilterAccountID" class="filter-account-list">
+            <option value=""></option>
+            {{#each model.Accounts}}
+            {{#unless UserName}}
+            {{#each Accounts}}
+            <option value="{{AccountID}}">{{Name}}</option>
+            {{/each}}
+            {{else}}
+            <optgroup label="{{UserName}}">
+                {{#each Accounts}}
+                <option value="{{AccountID}}">{{Name}}</option>
+                {{/each}}
+            </optgroup>
+            {{/unless}}
+            {{/each}}
+
+        </select>
+        <div class="item-content">
+            <div class="item-inner">
+                <!-- Select label -->
+                <div class="item-title">Account</div>
+                <!-- Selected value, not required -->
+                <div class="item-after"></div>
+            </div>
+        </div>
+    </a>
+</li>
+<li>
+    <!-- Additional "smart-select" class -->
+    <a href="#" class="item-link smart-select" data-back-on-select="true">
+        <!-- select -->
+        <select name="ExpenseFilterPayeeID" class="filter-payee-list">
+            <option value=""></option>
+            {{#each model.Payees}}
+            <option value="{{PayeeID}}">{{Name}}</option>
+            {{/each}}
+        </select>
+        <div class="item-content">
+            <div class="item-inner">
+                <!-- Select label -->
+                <div class="item-title">Payee</div>
+                <!-- Selected value, not required -->
+                <div class="item-after"></div>
+            </div>
+        </div>
+    </a>
+</li>
+<li>
+    <!-- Additional "smart-select" class -->
+    <a href="#" class="item-link smart-select" data-back-on-select="true">
+        <!-- select -->
+        <select name="ExpenseFilterVendorID" class="filter-vendor-list">
+            <option value=""></option>
+            {{#each model.Vendors}}
+            <option value="{{VendorID}}">{{Name}}</option>
+            {{/each}}
+        </select>
+        <div class="item-content">
+            <div class="item-inner">
+                <!-- Select label -->
+                <div class="item-title">Vendor</div>
+                <!-- Selected value, not required -->
+                <div class="item-after"></div>
+            </div>
+        </div>
+    </a>
+</li>
+<li>
+    <!-- Additional "smart-select" class -->
+    <a href="#" class="item-link smart-select" data-back-on-select="true">
+        <!-- select -->
+        <select name="ExpenseFilterEventID" class="filter-event-list">
+            <option value=""></option>
+            {{#each model.Events}}
+            {{#unless UserName}}
+            {{#each Events}}
+            <option value="{{EventID}}">{{Name}}</option>
+            {{/each}}
+            {{else}}
+            <optgroup label="{{UserName}}">
+                {{#each Events}}
+                <option value="{{EventID}}">{{Name}}</option>
+                {{/each}}
+            </optgroup>
+            {{/unless}}
+            {{/each}}
+
+        </select>
+        <div class="item-content">
+            <div class="item-inner">
+                <!-- Select label -->
+                <div class="item-title">Event</div>
+                <!-- Selected value, not required -->
+                <div class="item-after"></div>
+            </div>
+        </div>
+    </a>
+</li>

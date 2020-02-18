@@ -1,0 +1,54 @@
+
+
+<div class="pages">
+    <div data-page="reportlist" class="page reportlist-page" data-pg-controller="report" data-pg-init="initlist">
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left sliding">
+            <a href="#" class="back link">
+                <i class="icon icon-back-white"></i>
+                <span> &lt;</span>
+            </a>
+        </div>
+        <div class="center sliding reports-list-header">Expenses</div>
+        <div class="right">
+            <a href="#" class="link add-event-expense">Add</a>
+        </div>
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar" data-search-list=".reports-list" data-search-in=".item-title">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content infinite-scroll report-infinite-scroll" data-distance="100">
+            <div class="list-block accordion-list report-filter">
+                <ul>
+                    <li class="accordion-item">
+                        <a href="#" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-funnel"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Filter</div>
+                            </div>
+                        </a>
+                        <div class="accordion-item-content">
+                            <div class="content-block report-filter-content">
+                                <ul></ul>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="list-block media-list reports-list searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+    </div>
+</div>

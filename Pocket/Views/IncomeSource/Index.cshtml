@@ -1,45 +1,26 @@
 ﻿@model IEnumerable<Pocket.Models.IncomeSource>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Income Sources";
 }
 
-<h2>Index</h2>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<br />
 
-<p>
-    @Html.ActionLink("Create New", "Create") | @Html.ActionLink("Quick View", "List")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.IconFile.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.LoginID)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th></th>
-    </tr>
+<table id="rowed2"></table>
+<div id="prowed2"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['SourceID', 'Name'];
+    var colModel = [
+        { name: 'SourceID', index: 'SourceID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: true,editrules:{required:true,maxValue:50}  }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.IconFile.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.LoginID)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.SourceID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.SourceID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.SourceID })
-        </td>
-    </tr>
-}
-
-</table>
+    ];
+    createJQGrid('/incomesource/jlist', colNames, colModel, 'SourceID', "/incomesource/jedit", "Source List", "#rowed2", '#prowed2', null, { sidx: 'Name', sord: 'asc', delgrid: true, delurl: '/incomesource/jdelete' });
+    </script>

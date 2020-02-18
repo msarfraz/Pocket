@@ -1,0 +1,55 @@
+﻿@model Pocket.Models.Notification
+@{
+    ViewBag.Title = "Notifications";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<p>
+    <br />
+    <button type="button" onclick="MarkAll()" class="btn btn-success"><span class="glyphicon glyphicon-check"></span> Mark All As Read</button>
+</p>
+<table id="lstNotifications"></table>
+<div id="pgrNotification"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+
+    var colNames = ['NotificationID','Date', 'Notification', 'URL', 'Status'];
+    var colModel = [
+       { name: 'NotificationID', index: 'NotificationID', width: 55, key: true, hidden: true },
+        { name: 'NotificationDate', index: 'NotificationDate', width: 100, editable: false },
+        { name: 'Text', index: 'Text', width: 400, editable: false, formatter: LinkFormatter },
+        { name: 'URL', index: 'URL', hidden: true },
+        { name: 'Status', index: 'Status', hidden: true }
+        ];
+    createJQGrid('/Notification/jlist', colNames, colModel, 'NotificationID', "", "Notifications", "#lstNotifications", '#pgrNotification', {}, { addgrid: false, editgrid: false, sidx: 'NotificationID', sord:"desc" });
+
+    function LinkFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+
+        if (cellvalue && cellvalue.length > 0) {
+            var cval = cellvalue;
+            var tag = "<a href='" + rowObject[3] + "' onclick='markread(" + rowObject[0] + ")'>" + cval + "</a>";
+            if (rowObject[4] == 1)
+                tag = tag + "<a href='#' onclick='markread(" + rowObject[0] + ")'>" + "<span class='label label-warning pull-right'>Mark Read</span>" + "</a>";
+
+            return tag;
+        }
+        else
+            return cellvalue;
+    }
+    function markread(notifid) {
+        PostData("/Notification/markread", { NotificationID: notifid }, function (data) {
+            $("#lstNotifications").jqGrid().trigger('reloadGrid');
+        });
+    }
+    function MarkAll() {
+        PostData("/Notification/MarkAllRead", {}, function (data) {
+            $("#lstNotifications").jqGrid().trigger('reloadGrid');
+        });
+    }
+</script>

@@ -1,4 +1,5 @@
 ﻿using Pocket.Common;
+using Pocket.Extensions;
 using Pocket.Models;
 using System;
 using System.Collections.Generic;
@@ -9,99 +10,103 @@ using System.Web.Mvc;
 
 namespace Pocket.Controllers
 {
+    [Authorize]
     public class NotificationController : Controller
     {
         QDbContext db = new QDbContext();
 
-        // GET: /Notification/List
-        public ActionResult List()
+        // GET: /Notification/Index
+        public ActionResult Index()
         {
             return View();
         }
         // GET: /Notification/
+        public JsonResult MList(int page, int rows)
+        {
+            return (JsonResult) List("NotificationDate", "desc", page, rows, ResultType.Mobile);
+        }
         public JsonResult JList(string sidx, string sord, int page, int rows)
         {
-            if (Request.IsAjaxRequest())
-            {
-                var notifications = db.Users.Find(State.UserID).Notifications;
+            return List(sidx, sord, page, rows, ResultType.Web);
+        }
 
-                return Util.CreateJsonResponse<Notification>(sidx, sord, page, rows, notifications, (Func<IEnumerable<Notification>, Array>)delegate(IEnumerable<Notification> rd)
+        private JsonResult List(string sidx, string sord, int page, int rows, ResultType rt)
+        {
+                var notifications = db.Notifications.Where(notif => notif.UserID == State.UserID);
+
+                return Util.CreateJsonResponse<Notification>(sidx, sord, page, rows, notifications, rt, (Func<IEnumerable<Notification>, Array>)delegate(IEnumerable<Notification> rd)
                 {
-                    return (
-                        from notif in rd
-                        select new
-                        {
-                            NotificationID = notif.NotificationID,
-                            cell = new string[] { notif.NotificationID.ToString(), notif.Text, notif.URL }
-                        }).ToArray();
+                    if (rt == ResultType.Web)
+                    {
+                        return (
+                       from notif in rd
+                       select new
+                       {
+                           NotificationID = notif.NotificationID,
+                           cell = new string[] { notif.NotificationID.ToString(), notif.NotificationDate.ToDateString(), notif.Text, notif.URL, notif.NotificationStatus.GetHashCode().ToString() }
+                       }).ToArray();
+                    }
+                    else
+                    {
+                        return (
+                       from notif in rd
+                       select new
+                       {
+                           NotificationID = notif.NotificationID,
+                           NotificationDate = notif.NotificationDate.ToDateString(),
+                           Title = notif.Title,
+                           Text = notif.Text,
+                           URL = notif.URL,
+                           MobileURL = notif.MobileURL,
+                           Status = notif.NotificationStatus.GetHashCode().ToString()
+                       }).ToArray();
+                    }
                 }
                     );
-            }
-            else
-                return Json(new HttpStatusCodeResult(HttpStatusCode.BadRequest));
 
         }
-        public static void AddNotification(QDbContext dbc, Notification notification)
+        public JsonResult NotificationsCount()
         {
-            dbc.Notifications.Add(notification);
-            dbc.SaveChanges();
+            int count = db.Notifications.Where(n => n.UserID == State.UserID && n.NotificationStatus == NotificationStatus.Unread).Count();
+            JsonResult jr = Repository.Success<JsonResult>(count);
+            jr.JsonRequestBehavior = JsonRequestBehavior.AllowGet;
+            return jr;
         }
-        public static void AddExpenseNotification(QDbContext db, int ExpenseID, bool AddExpense)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        // GET: /Notification/markread
+        public JsonResult markread(int NotificationID)
         {
-            Expense exp = db.Expenses.Find(ExpenseID);
-            if (exp.EventID.HasValue)
+            Notification notif = db.Notifications.Where(n=>n.UserID == State.UserID && n.NotificationID == NotificationID && n.NotificationStatus == NotificationStatus.Unread).FirstOrDefault();
+            if (notif != null)
             {
-                Event evt = db.Events.Find(exp.EventID.Value);
-                foreach (var fr in evt.SharedFriends)
-                {
-                    Notification notif = new Notification();
-                    notif.UserID = fr.UserID;
-                    notif.GeneratedBy = State.UserID;
-                    notif.NotificationDate = DateTime.Now;
-                    notif.Text = string.Format("An expense '{0} -- {1}' is {2} by '{3}' in '{4}'",
-                        string.IsNullOrEmpty(exp.Description) ? exp.Subcategory.Category.Name + "-" + exp.Subcategory.Name : exp.Description,
-                        exp.ExpenseDate.ToShortDateString(), AddExpense ? "added" : "updated", Util.GetUserName(exp.User), evt.Name);
-                    notif.URL = string.Format("/Report/EventReport/{0}", exp.EventID);
-                    db.Notifications.Add(notif);
-                }
-                if(evt.SharedFriends.Count > 0)
+                notif.NotificationStatus = NotificationStatus.Read;
+                db.Entry(notif).State = System.Data.Entity.EntityState.Modified;
                 db.SaveChanges();
             }
+            return Json(new HttpStatusCodeResult(HttpStatusCode.OK));
         }
 
-        internal static void AddEventShareNotification(int eventID, string eventName, int friendID, QDbContext db)
+        [HttpPost]
+        public JsonResult MarkAllRead()
         {
-            Notification notif = new Notification();
-            notif.UserID = friendID;
-            notif.GeneratedBy = State.UserID;
-            notif.NotificationDate = DateTime.Now;
-            notif.Text = string.Format("An event '{0}' is shared with you by '{1}'",
-                eventName, State.CurrentUserName);
-            notif.URL = string.Format("/Report/EventReport/{0}", eventID);
-            db.Notifications.Add(notif);
-            db.SaveChanges();
-        }
-
-        internal static void AddExpenseCommentNotification(string comment, int ExpenseID, QDbContext db)
-        {
-            Expense exp = db.Expenses.Find(ExpenseID);
-            if (exp.EventID.HasValue)
+            try
             {
-                Event evt = db.Events.Find(exp.EventID.Value);
-                foreach (var fr in evt.SharedFriends)
+                var notifs = db.Notifications.Where(n => n.UserID == State.UserID && n.NotificationStatus == NotificationStatus.Unread);
+                if (notifs != null)
                 {
-                    Notification notif = new Notification();
-                    notif.UserID = fr.UserID;
-                    notif.GeneratedBy = State.UserID;
-                    notif.NotificationDate = DateTime.Now;
-                    notif.Text = string.Format("A comment '{0}' is added by '{1}' in '{2}'",
-                       comment, State.CurrentUserName, evt.Name);
-                    notif.URL = string.Format("/Report/EventReport?id={0}&ExpenseID={1}", exp.EventID, ExpenseID);
-                    db.Notifications.Add(notif);
-                }
-                if (evt.SharedFriends.Count > 0)
+                    notifs.ToList().ForEach(n => n.NotificationStatus = NotificationStatus.Read);
+
                     db.SaveChanges();
+                }
+
             }
+            catch (Exception ex)
+            {
+                ex.ToString();
+            }
+            return Json(new HttpStatusCodeResult(HttpStatusCode.OK));
         }
+        
     }
 }

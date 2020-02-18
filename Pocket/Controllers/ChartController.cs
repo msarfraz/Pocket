@@ -1,166 +1,66 @@
-﻿using DotNet.Highcharts;
-using DotNet.Highcharts.Enums;
-using DotNet.Highcharts.Helpers;
-using DotNet.Highcharts.Options;
-using Pocket.Common;
+﻿using Pocket.Common;
 using Pocket.Models;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Core.Objects;
 using System.Linq;
-using System.Net;
-using System.Web;
 using System.Web.Mvc;
-using Pocket.Common;
-using Pocket.Models;
 using System.Collections;
 using System.Drawing;
+using Pocket.ViewModels;
+using Pocket.Extensions;
 
 namespace Pocket.Controllers
 {
+    [Authorize]
     public class ChartController : Controller
     {
         private QDbContext db = new QDbContext();
 
-        public ActionResult Index()
+        public ActionResult CategoryChart()
         {
             return View();
         }
         #region Category Chart
-        public ActionResult CategoryChart(int? Month, int? Year)
-        {
-            var cats = getCategoryBudgetAndAmount(DateTime.Now.Month, DateTime.Now.Year);
-
-            Tuple<Highcharts, Highcharts> model = new Tuple<Highcharts, Highcharts>(getCategoryPieChart(cats, "Categories Share"), getCategoryColumnChart(cats, "Categories Budget"));
-            return View(model);
-        }
+        
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public JsonResult CategoryChartData(int Month, int Year)
+        public JsonResult JCategoryChartData(int Month, int Year)
         {
-            var cats = getCategoryBudgetAndAmount(Month, Year);
-            JsonResult jr = new JsonResult();
-            object[] piesSeries = cats.Where(a => a.Value.Item2 > 0).Select(a => new object[] { a.Key, a.Value.Item2 }).ToArray();
-            object[] colSeries0 = cats.Select(a=>(object)a.Value.Item2).ToArray();
-            object[] colSeries1 = cats.Select(a=>(object)a.Value.Item1).ToArray();
-            jr.Data = new object[] { piesSeries, colSeries0, colSeries1 }.ToArray();
-            
-            return jr;
+            return CategoryChartData<JsonResult>(Month, Year, false);
 
         }
-
-        /// <summary>
-        /// It is used to create pie chart for category and subcategory
-        /// </summary>
-        /// <param name="cats"></param>
-        /// <returns></returns>
-        private Highcharts getCategoryPieChart(Dictionary<string, MutableTuple<double, double>> cats, string chartTitle)
+        public JsonResult MCategoryChartData(string YearMonth)
         {
-            Highcharts chart = new DotNet.Highcharts.Highcharts("piechart");
-            chart.InitChart(new Chart() { DefaultSeriesType = ChartTypes.Pie, Type = ChartTypes.Pie, Options3d = new ChartOptions3d() { Alpha = 45, Enabled = true } })
-                .SetTitle(new Title() { Text = chartTitle });
+            var dt = Util.FromDateTime(YearMonth);
 
-            chart.SetPlotOptions(new PlotOptions()
-            {
-                Pie = new PlotOptionsPie()
-                {
-                    DataLabels = new PlotOptionsPieDataLabels()
-                    {
-                        Format = "<b>{point.name}</b>: {point.percentage:.1f} %",
-                    },
-                    InnerSize = new PercentageOrPixel(100),
-                    Depth = 45
-                }
-            });
+            return CategoryChartData<JsonResult>(dt.Month, dt.Year, false);
 
-            chart.SetSeries(new Series
-            {
-                Name = "Amount",
-                Data = new Data(cats.Where(a => a.Value.Item2 > 0).Select(a => new object[] { a.Key, a.Value.Item2 }).ToArray())
-            });
-            return chart;
-        }
-        private Highcharts getCategoryColumnChart(Dictionary<string, MutableTuple<double, double>> cats, string chartTitle)
-        {
-            Highcharts chart = new DotNet.Highcharts.Highcharts("colchart");
-            chart.InitChart(new Chart() { DefaultSeriesType = ChartTypes.Column, Type = ChartTypes.Column, Options3d = new ChartOptions3d() { Alpha = 45, Enabled = true } })
-                .SetTitle(new Title() { Text = chartTitle });
-
-            chart.SetPlotOptions(new PlotOptions()
-            {
-                Column = new PlotOptionsColumn()
-                {
-                    PointPadding = 0.2,
-                    BorderWidth = 0
-                }
-                
-            });
-            chart.SetXAxis(new XAxis()
-                {
-                    Categories = cats.Keys.ToArray()
-                });
-            chart.SetYAxis(new YAxis(){
-                Min = 0,
-                Title = new YAxisTitle(){
-                     Text = "Amount"
-                }
-            });
-            string[] str = new string[]{};
-            chart.SetSeries(new Series[]
-            {
-                new Series{
-                    Name = "Amount",
-                    Type = ChartTypes.Column,
-                    Data = new Data(cats.Select(a=>(object)a.Value.Item2).ToArray())
-                },
-                new Series{
-                    Name = "Budget",
-                    Type = ChartTypes.Column,
-                    Data = new Data(cats.Select(a=>(object)a.Value.Item1).ToArray())
-                },
-                new Series{
-                    Name = "Amount",
-                    Type = ChartTypes.Pie,
-                    PlotOptionsPie = new PlotOptionsPie{ Size = new PercentageOrPixel(100), 
-                        Center = new PercentageOrPixel[]{new PercentageOrPixel(80), new PercentageOrPixel(100)},
-                        ShowInLegend = false,
-                        Depth = 10
-                    },
-                    Data = new Data(cats.Where(a => a.Value.Item2 > 0).Select(a => new object[] { a.Key, a.Value.Item2 }).ToArray())
-                    
-                }
-            });
-            return chart;
-        }
-        private Dictionary<string, MutableTuple<double, double>> getCategoryBudgetAndAmount(int Month, int Year)
-        {
-            Dictionary<string, MutableTuple<double, double>> data = new Dictionary<string, MutableTuple<double, double>>(); // KeyValuePair<budget,amount>
-
-            var cats = db.Users.Find(State.UserID).Categories;
-            foreach (var cat in cats)
-            {
-                double budget = 0;
-                foreach (var scat in cat.Subcategories)
-                {
-                    budget += scat.Budget.BudgetAmount;
-                }
-                data.Add(cat.Name, new MutableTuple<double, double>(budget, 0));
-            }
-
-            // Get Amount Data
-
-            var expenses = db.Users.Find(State.UserID).Expenses.Where(ex => ex.ExpenseDate.Month == Month && ex.ExpenseDate.Year == Year);
-
-            foreach (var exp in expenses)
-            {
-                data[exp.Subcategory.Category.Name].Item2 += exp.Amount;
-
-            }
-            return data;
             
         }
+        public T CategoryChartData<T>(int Month, int Year, bool includeEvents) where T:JsonResult
+        {
+            var cats = Repository.GetCategoryBudgetAmount(db, Month, Year, false);
+            if (includeEvents)
+            {
+                var events = getEventBudgetAmount(db, Month, Year);
+                cats = cats.Union(events).ToList();
+            }
+            var Data = cats.Select(a => new { name =  a.Name, data = new object[]{ a.Amount, a.Budget }}).ToArray();
+            if (Data.Length == 0) // if there is no category/event to show. select all categories so that chart is displayed.
+            {
+              //  Data = new object[][] { new object[] { "No Category", 0, 0 } };
+            }
+            var labels = cats.Select(a => a.Name).ToArray();
+            var expenses = new { name = "Expense", data = cats.Select(a => a.Amount ).ToArray() };
+            var budget = new { name = "Budget", data = cats.Select(a => a.Budget).ToArray() };
+            var data = new  {
+            categories = labels,
+            series = new object[] { expenses, budget }
+            } ;
+
+            return Util.Package<T>(data);
+        }
+        
         #endregion
 
         #region Subcategory Chart
@@ -168,53 +68,64 @@ namespace Pocket.Controllers
         public ActionResult SubcatChart()
         {
             
-            var cats = db.Users.Find(State.UserID).Categories.Select(c => new SelectListItem() { Text = c.Name, Value = c.CategoryID.ToString() });
-            var scats = getSubCategoryBudgetAndAmount(DateTime.Now.Month, DateTime.Now.Year, cats.Count() > 0 ? Util.ParseInt(cats.First().Value) : 0);
+            var cats = db.Categories.Where(c=>c.UserID == State.UserID && c.Display == DisplaySetting.Yes);
+            var ucats = db.CategoryUsers.Where(uc => uc.UserID == State.UserID && uc.Display == DisplaySetting.Yes).Select(uc => uc.Category);
 
-            var piechart = getCategoryPieChart(scats, "Subcategories Share");
-            var colchart = getCategoryColumnChart(scats, "Subcategories Budget and Amount");
-
-            Tuple<Highcharts,Highcharts, IEnumerable<SelectListItem>> model = new Tuple<Highcharts, Highcharts, IEnumerable<SelectListItem>>(piechart, colchart, cats);
             
+            ChartData model = new ChartData(db);
+            
+            model.Categories = cats.ToList();
+            model.OtherCategories = ucats.ToList();
+
             return View(model);
         }
         
         
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public JsonResult SubcatChartData(int Month, int Year, int CategoryID)
+        public JsonResult JSubcategoryChartData(int Month, int Year, int CategoryID)
         {
-            var scats = getSubCategoryBudgetAndAmount(Month, Year, CategoryID);
-            JsonResult jr = new JsonResult();
-            object[] piesSeries = scats.Where(a => a.Value.Item2 > 0).Select(a => new object[] { a.Key, a.Value.Item2 }).ToArray();
-            object[] colSeries0 = scats.Select(a => (object)a.Value.Item2).ToArray();
-            object[] colSeries1 = scats.Select(a => (object)a.Value.Item1).ToArray();
-            jr.Data = new object[] { piesSeries, colSeries0, colSeries1, scats.Keys.ToArray() }.ToArray();
-
-            return jr;
+            return SubcategoryChartData<JsonResult>(Month, Year, CategoryID);
 
         }
-        private Dictionary<string, MutableTuple<double, double>> getSubCategoryBudgetAndAmount(int Month, int Year, int categoryID)
+        public JsonResult MSubcategoryChartData(string YearMonth, int CategoryID)
         {
-            Dictionary<string, MutableTuple<double, double>> data = new Dictionary<string, MutableTuple<double, double>>(); // KeyValuePair<budget,amount>
+            var dt = Util.FromDateTime(YearMonth);
+            return SubcategoryChartData<JsonResult>(dt.Month, dt.Year, CategoryID);
 
-            var scats = db.Users.Find(State.UserID).Categories.Find(cat=>cat.CategoryID == categoryID).Subcategories;
-            foreach (var scat in scats)
+        }
+        private T SubcategoryChartData<T>(int Month, int Year, int CategoryID) where T:JsonResult
+        {
+            var scats = getSubCategoryBudgetAndAmount(Month, Year, CategoryID);
+            
+            var Data = scats.Select(a => new object[] { a.Name, a.Amount, a.Budget }).ToArray();
+            if (Data.Length == 0) // if there is no subcategory to show. select all categories so that chart is displayed.
             {
-                data.Add(scat.Name, new MutableTuple<double, double>(scat.Budget.BudgetAmount, 0));
+                Data = new object[][] { new object[] { "No Subcategory", 0, 0 } };
             }
-
-            // Get Amount Data
-
-            var expenses = db.Users.Find(State.UserID).Expenses.Where(ex => ex.ExpenseDate.Month == Month && ex.ExpenseDate.Year == Year && ex.Subcategory.CategoryID == categoryID);
-
-            foreach (var exp in expenses)
+            var labels = scats.Select(a => a.Name).ToArray();
+            var expenses = new { name = "Expense", data = scats.Select(a => a.Amount).ToArray() };
+            var budget = new { name = "Budget", data = scats.Select(a => a.Budget).ToArray() };
+            var data = new
             {
-                data[exp.Subcategory.Name].Item2 += exp.Amount;
+                categories = labels,
+                series = new object[] { expenses, budget }
+            };
 
-            }
-            return data;
+//            var labels = new object[] { new object[] { "Subcategory", "Expense", "Budget" } };
+  //          var data = labels.Union(Data);
 
+            return Util.Package<T>(data);
+
+        }
+        private List<SubcategoryBudgetAmount> getSubCategoryBudgetAndAmount(int Month, int Year, int categoryID)
+        {
+            List<SubcategoryBudgetAmount> scats = new List<SubcategoryBudgetAmount>();
+            var cats = Repository.GetCategoryBudgetAmount(db, Month, Year, false, categoryID);
+            if (cats.Count > 0)
+                scats = cats[0].Subcategories;
+            return scats;
+            
         }
         #endregion
 
@@ -222,240 +133,308 @@ namespace Pocket.Controllers
 
         public ActionResult EventChart()
         {
-            var mbudget = getMonthBudget(DateTime.Now.Month, DateTime.Now.Year);
-            var chart = getEventBubbleChart(getEventBudget(DateTime.Now.Month, DateTime.Now.Year, mbudget), mbudget );
+            var cats = getEventBudgetAmount(db, DateTime.Now.Month, DateTime.Now.Year);
 
-            return View(chart);
+            return View(cats);
         }
 
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public JsonResult EventChartData(int Month, int Year)
+        public JsonResult JEventChartData(int Month, int Year)
         {
-            double mbudget = getMonthBudget(Month, Year);
-            var data = getEventBudget(Month, Year, mbudget);
-            var rdata = new ArrayList();
-            foreach (var item in data)
-            {
-                rdata.Add(new { name = item.Name, data = item.Data.ArrayData });
-            }
-            JsonResult jr = new JsonResult();
-            jr.Data = rdata.ToArray();
-
-            return jr;
-
+            return EventChartData<JsonResult>(Month, Year);
         }
 
-        private List<Series> getEventBudget(int Month, int Year, double mbudget)
+        public JsonResult MEventChartData(string YearMonth)
         {
-            var events = db.Users.Find(State.UserID).Events.Where(ev => ev.EventDate.Month == Month && ev.EventDate.Year == Year).OrderBy(ev=>ev.EventDate);
-            List<Series> series = new List<Series>();
+            var dt = Util.FromDateTime(YearMonth);
+            return EventChartData<JsonResult>(dt.Month, dt.Year);
+
+        }
+        private T EventChartData<T>(int Month, int Year) where T:JsonResult
+        {
+            var events = getEventBudgetAmount(db, Month, Year);
+
+            var Data = events.Select(a => new object[] { a.Name, a.Amount, a.Budget }).ToArray();
+            if (Data.Length == 0) // if there is no event, add a dummy
+            {
+                Data = new object[][] { new object[] { "No Event", 0, 0 } };
+            }
+            
+            var labels = events.Select(a => a.Name).ToArray();
+            var expenses = new { name = "Expense", data = events.Select(a => a.Amount).ToArray() };
+            var budget = new { name = "Budget", data = events.Select(a => a.Budget).ToArray() };
+            var data = new
+            {
+                categories = labels,
+                series = new object[] { expenses, budget }
+            };
+
+            //var labels = new object[] { new object[] { "Subcategory", "Expense", "Budget" } };
+            //var data = labels.Union(Data);
+
+            return Util.Package<T>(data);
+        }
+        private static List<CategoryBudgetAmount> getEventBudgetAmount(QDbContext db, int Month, int Year)
+        {
+            // events of the month
+            var monthEvents = db.Events.Where( ev => ev.UserID == State.UserID && ev.EventDate.Month == Month && ev.EventDate.Year == Year);
+            // expenses occurred in the month for any events
+            var allevents = db.Events.Where(ev => ev.UserID == State.UserID).Select(ev=>ev.EventID).Union(db.EventUsers.Where(evu => evu.UserID == State.UserID).Select(evu => evu.Event.EventID)).ToArray();
+            var exEvents = db.Expenses.Where(ex => ex.ExpenseDate.Month == Month && ex.ExpenseDate.Year == Year && ex.EventID.HasValue && allevents.Contains(ex.EventID.Value)).DefaultIfEmpty().Select(ex=>ex.Event);
+            var events = exEvents.Union(monthEvents).Where(ev=>ev != null).ToList();
+
+            List<CategoryBudgetAmount> cab = new List<CategoryBudgetAmount>();
             foreach (var ev in events)
             {
-                series.Add(
-                    new Series
-                    {
-                        Name = ev.Name,
-                        Data = new Data(new object[]{
-                            new { x = ev.EventDate.Day, y = ev.Budget.BudgetAmount, z = Math.Round((ev.Budget.BudgetAmount / mbudget) * 100, 0), name = ev.Name }    
-                        })
-                    }
-                    );
-
+                double actuals = db.Expenses.Where(ex => ex.EventID == ev.EventID).Select(ex => ex.Amount).DefaultIfEmpty(0).Sum();
+                cab.Add(new CategoryBudgetAmount { Name = ev.Name, Amount = actuals, Budget = ev.Budget.BudgetAmount });
             }
-            return series;
-        }
-        private Highcharts getEventBubbleChart(List<Series> series, double mbudget)
-        {
-            Highcharts chart = new DotNet.Highcharts.Highcharts("eventchart");
-            chart.InitChart(new Chart() { Type = ChartTypes.Bubble })
-                .SetTitle(new Title() { Text = "Events" });
-
-            chart.SetPlotOptions(new PlotOptions()
-            {
-                Bubble = new PlotOptionsBubble()
-                {
-                    Tooltip = new PlotOptionsBubbleTooltip
-                    {
-                        HeaderFormat = "<b>{series.name}</b><br>",
-                        PointFormat = "Date {point.x} , Budget {point.y}"
-                    }
-                }
-
-            });
-            chart.SetXAxis(new XAxis()
-            {
-                AllowDecimals = false,
-                Min = 1,
-                Max = 31,
-                Title = new XAxisTitle(){
-                    Text = "Date"
-                }
-            });
-            chart.SetYAxis(new YAxis()
-            {
-                AllowDecimals = false,
-                Min = 0,
-                Max = mbudget,
-                Title = new YAxisTitle()
-                {
-                    Text = "Amount"
-                }
-                
-            });
-            
-            
-            chart.SetSeries(
-                series.ToArray()    
-            );
-            return chart;
-        }
-        private double getMonthBudget(int month, int year)
-        {
-            double mbudget = 0;
-            var cats = db.Users.Find(State.UserID).Categories;
-            foreach (var cat in cats)
-            {
-                foreach (var scat in cat.Subcategories)
-                {
-                    mbudget += scat.Budget.BudgetAmount;
-                }
-            }
-
-            return mbudget;
+            return cab;
         }
         #endregion
 
         #region Homepage Chart
         public ActionResult HomepageChart()
         {
-            int month = DateTime.Now.Month;
-            int year = DateTime.Now.Year;
 
-            var mbudget = getMonthBudget(DateTime.Now.Month, DateTime.Now.Year);
-            var series = getEventBudget(month, year, mbudget);
-            series.Add(getIncomeSeries(month, year));
-            series.AddRange(getExpenseSeries(month, year, mbudget));
-
-
-            Highcharts chart = getComboChart(series, mbudget);
-
-            return View(chart);
+            return View();
         }
-        Series getIncomeSeries(int Month, int Year)
+
+        public JsonResult MBudgetChartData(string yearMonth)
+        {
+            DateTime dt = DateTime.Now;
+            dt = new DateTime(dt.Year, dt.Month - 1, 1);
+
+            var budget = Pocket.Common.Global.getMonthBudget(db, dt.Month, dt.Year, false);
+
+            var expense = Pocket.Common.Global.getMonthExpense(db, dt.Month, dt.Year);
+            var diff = budget - expense;
+            int perc = (int)((diff / (budget == 0 ? 1 : budget)) * 100);
+
+            return Util.Package<JsonResult>(new object[]{ new { value = perc }});
+
+        }
+        public JsonResult MHomeChartData(string yearMonth)
+        {
+            int year, month;
+            year =  DateTime.Now.Year;
+            month = DateTime.Now.Month;
+            if(!string.IsNullOrEmpty(yearMonth) && yearMonth.Split('-').Length > 0)
+            {
+                year = Util.ParseInt( yearMonth.Split('-')[0], year);
+                month = Util.ParseInt(yearMonth.Split('-')[1], month);
+            }
+            return HomeChartData<JsonResult>(year, month);
+
+        }
+        public JsonResult JHomeChartData(int? year, int? month)
+        {
+
+            return HomeChartData<JsonResult>(year.HasValue?year.Value:DateTime.Today.Year, month.HasValue?month.Value:DateTime.Today.Month);
+
+        }
+        private T HomeChartData<T>(int year, int month) where T : JsonResult
+        {
+            DateTime dt = new DateTime(year, month, 1);
+            int Month = dt.Month;
+            int Year = dt.Year;
+         /*   HomeChartSeries series = new HomeChartSeries(getExpenseSeries(db, Month, Year),
+                getIncomeSeries(db, Month, Year),
+                getBudgetSeries(db, Month, Year, true),
+                getBudgetSeries(db, Month, Year, false),
+                getEventSeries(db, Month, Year),
+                getTargetSeries(db, Month, Year), Month, Year);*/
+
+            ArrayList al = new ArrayList();
+            // categories
+            var days = new ArrayList();
+            for (int i = 0; i <= DateTime.DaysInMonth(year, month); i++ )
+            { 
+                days.Add(i);
+            }
+      /*          al.Add(days.ToArray());
+
+            // data
+            
+            al.Add(getBudgetSeries(db, month, year,true).Select(hcp => hcp.Amount).ToArray());
+            al.Add(getBudgetSeries(db, month, year,false).Select(hcp => hcp.Amount).ToArray());
+            al.Add(getEventSeries(db, month, year).Select(hcp => hcp.Amount).ToArray());
+            al.Add(getTargetSeries(db, month, year).Select(hcp => hcp.Amount).ToArray()); */
+
+            var labels = days.ToArray();
+            var expenses = new { name = "Expense", data = getExpenseSeries(db, month, year).Select(hcp => new object[] { hcp.Day, hcp.Amount }).ToArray() };
+            var income = new { name = "Income", data = getIncomeSeries(db, month, year).Select(hcp => new object[]{ hcp.Day, hcp.Amount }).ToArray() };
+            var budget = new { name = "Budget", data = getBudgetSeries(db, month, year, true).Select(hcp => new object[] { hcp.Day, hcp.Amount }).ToArray() };
+            var limit = new { name = "Limit", data = getBudgetSeries(db, month, year, false).Select(hcp => new object[] { hcp.Day, hcp.Amount }).ToArray() };
+        //    var events = new { name = "Events", type = "bubble", data = getEventSeries(db, month, year).Select(hcp => new {x = hcp.Day, y = hcp.Amount, z=-1, name = hcp.Name}).ToArray() };
+         //   var targets = new { name = "Targets", data = getTargetSeries(db, month, year).Select(hcp => hcp.Amount).ToArray() };
+
+            var data = new
+            {
+                categories = labels,
+                series = new object[] { expenses, income, budget, limit }
+            };
+
+            return Util.Package<T>(data);
+
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public JsonResult HomepageChartData(int Month, int Year)
+        {
+
+            HomeChartSeries series = new HomeChartSeries(
+                getExpenseSeries(db, Month, Year),
+                getIncomeSeries(db, Month, Year),
+                getBudgetSeries(db, Month, Year, true),
+                getBudgetSeries(db, Month, Year, false),
+                getEventSeries(db, Month, Year),
+                getTargetSeries(db, Month, Year), Month, Year);
+
+            return Util.Package<JsonResult>(series);
+
+        }
+
+        static List<HomeChartPoint> getIncomeSeries(QDbContext db, int Month, int Year)
         {
             var myincome = from inc in db.Income
-                           where inc.IncomeDate.Month == Month && inc.IncomeDate.Year == Year
+                           where inc.UserID == State.UserID && inc.IncomeDate.Month == Month && inc.IncomeDate.Year == Year
                            group inc by inc.IncomeDate.Day into g
                            orderby g.Key
                            select new {IDate = g.Key, IAmount = g.Sum(inc=>inc.Amount) };
-            List<object> tmp = new List<object>();
-            foreach (var item in myincome)
-            {
-                object[] objs = new object[] {item.IDate, item.IAmount };
-                tmp.Add(objs);
-            }
+            List<HomeChartPoint> incomes = new List<HomeChartPoint>();
+            double monthIncome = 0;
+            //foreach (var item in myincome)
+            //{
+            //    monthIncome += item.IAmount;
+            //    HomeChartPoint hcp = new HomeChartPoint { Day = item.IDate, Amount = monthIncome };
+            //    incomes.Add(hcp);
+            //}
+            int max = DateTime.DaysInMonth(Year, Month);
 
-            Series s = new Series
+            for (int i = 1; i <= max; i++)
             {
-                Name = "Income",
-                Type = ChartTypes.Line,
-                Data = new Data(tmp.ToArray())
-            };
-            return s;
+                var item = myincome.FirstOrDefault(a => a.IDate == i);
+                if (item != null)
+                {
+                    monthIncome += item.IAmount;
+
+                    incomes.Add(new HomeChartPoint { Day = i, Amount = monthIncome });
+                }
+                    
+            }
+            return incomes;
         }
-        List<Series> getExpenseSeries(int Month, int Year, double mbudget)
+        static List<HomeChartPoint> getExpenseSeries(QDbContext db, int Month, int Year)
         {
-            var myexpense = from exp in db.Expenses
+            var mcats = db.Categories.Where(cat => cat.UserID == State.UserID);
+            var fcats = db.CategoryUsers.Where(cu => cu.UserID == State.UserID).Select(cu=>cu.Category);
+            var allcats = mcats.Union(fcats);
+
+            var mevents = db.Events.Where(ev => ev.UserID == State.UserID && ev.Budgeted == YesNoOptions.Yes);
+            var fevents = db.EventUsers.Where(eu => eu.UserID == State.UserID && eu.Event.Budgeted == YesNoOptions.Yes).Select(eu=>eu.Event);
+            var allevents = mevents.Union(fevents);
+
+            var cexpense = from exp in db.Expenses
+                            join cats in allcats on exp.Subcategory.CategoryID equals cats.CategoryID
+                            
+                            where exp.ExpenseDate.Month == Month && exp.ExpenseDate.Year == Year && 
+                            (!exp.EventID.HasValue || (exp.Event.Budgeted == YesNoOptions.No && exp.UserID == State.UserID))
+                                select exp;
+
+            var eexpense = from exp in db.Expenses
+                            join evs in allevents on exp.EventID equals evs.EventID
+
                             where exp.ExpenseDate.Month == Month && exp.ExpenseDate.Year == Year
-                            group exp by exp.ExpenseDate.Day into g
-                           orderby g.Key
-                           select new { IDate = g.Key, IAmount = g.Sum(e => e.Amount) };
+                               select exp;
+                            /*group exp by exp.ExpenseDate.Day into g
+                            orderby g.Key
+                            select new { IDate = g.Key, IAmount = g.Sum(e => e.Amount) };*/
 
-            List<object> es = new List<object>();
-            List<object> bs = new List<object>();
+            var allexpense = cexpense.Union(eexpense);
 
-            if (myexpense.Count() > 0) // insert a budget entry in the start of month
+            var myexpense = from exp in allexpense
+                      group exp by exp.ExpenseDate.Day into g
+                      orderby g.Key
+                      select new { IDate = g.Key, IAmount = g.Sum(e => e.Amount) };
+
+            List<HomeChartPoint> es = new List<HomeChartPoint>();
+
+            double eamount = 0;
+            /*foreach (var item in myexpense)
             {
-                if (myexpense.First().IDate != 1)
-                    bs.Add(new object[] { 1, mbudget });
+                eamount += item.IAmount;
+                HomeChartPoint hcp = new HomeChartPoint { Day = item.IDate, Amount = eamount };
+                es.Add(hcp);
+
+            }*/
+            int max = DateTime.DaysInMonth(Year, Month);
+            for (int i = 1; i <= max; i++)
+            {
+                var item = myexpense.FirstOrDefault(a => a.IDate == i);
+                if (item != null)
+                {
+                    eamount += item.IAmount;
+
+                    es.Add(new HomeChartPoint { Day = i, Amount = eamount });
+                }
+                    
             }
-            else
-                bs.Add(new object[] { 1, mbudget });
-
-            foreach (var item in myexpense)
-            {
-                object[] objs = new object[] { item.IDate, item.IAmount };
-                es.Add(objs);
-
-                mbudget -= item.IAmount;
-                bs.Add(new object[] { item.IDate, mbudget });
-            }
-
-            List<Series> s = new List<Series>();
-            s.Add(new Series
-            {
-                Name = "Expense",
-                Type = ChartTypes.Line,
-                Data = new Data(es.ToArray())
-            });
-            s.Add(new Series
-            {
-                Name = "Budget",
-                Type = ChartTypes.Line,
-                Data = new Data(bs.ToArray())
-            });
-
-            return s;
+            return es;
         }
-        private Highcharts getComboChart(List<Series> series, double mbudget)
+        private static List<HomeChartPoint> getBudgetSeries(QDbContext db, int Month, int Year, bool ConstantBudget)
         {
-            Highcharts chart = new DotNet.Highcharts.Highcharts("eventchart");
-            chart.InitChart(new Chart() { Type = ChartTypes.Bubble })
-                .SetTitle(new Title() { Text = "Month Summary" });
+            double mbudget = Pocket.Common.Global.getMonthBudget(db, Month, Year, ConstantBudget);
 
-            chart.SetPlotOptions(new PlotOptions()
+            List<HomeChartPoint> bs = new List<HomeChartPoint>();
+            bs.Add(new HomeChartPoint {Day = 1, Amount = mbudget });
+            bs.Add(new HomeChartPoint {Day = DateTime.DaysInMonth(Year, Month), Amount = mbudget });
+           /* for (int i = 1; i <= DateTime.DaysInMonth(Year, Month); i++)
             {
-                Bubble = new PlotOptionsBubble()
-                {
-                    Tooltip = new PlotOptionsBubbleTooltip
-                    {
-                        HeaderFormat = "<b>{series.name}</b><br>",
-                        PointFormat = "Date {point.x} , Budget {point.y}"
-                    }
-                }
+                bs.Add(new HomeChartPoint { Day = i, Amount = mbudget });
+            }*/
+            return bs;
 
-            });
-            chart.SetXAxis(new XAxis()
-            {
-                AllowDecimals = false,
-                Min = 1,
-                Max = 31,
-                Title = new XAxisTitle()
-                {
-                    Text = "Date"
-                }
-            });
-            chart.SetYAxis(new YAxis()
-            {
-                AllowDecimals = false,
-                Min = 0,
-                //Max = mbudget,
-                Title = new YAxisTitle()
-                {
-                    Text = "Amount"
-                }
-
-            });
-
-
-            chart.SetSeries(
-                series.ToArray()
-            );
-            return chart;
         }
-
+        private static List<HomeChartPoint> getEventSeries(QDbContext db, int Month, int Year)
+        {
+            var events = db.Users.Find(State.UserID).Events.Where(ev => ev.EventDate.Month == Month && ev.EventDate.Year == Year).OrderBy(ev => ev.EventDate);
+            List<HomeChartPoint> series = new List<HomeChartPoint>();
+            foreach (var ev in events)
+            {
+                //double actuals = db.Expenses.Where(ex => ex.EventID == ev.EventID).Select(ex => ex.Amount).DefaultIfEmpty(0).Sum();
+                //double amount = Math.Max(ev.Budget.BudgetAmount, actuals);
+                series.Add(
+                    new HomeChartPoint
+                    {
+                        Name = ev.Name,
+                        Day = ev.EventDate.Day,
+                        Amount = ev.Budget.BudgetAmount
+                    }
+                    );
+            }
+            return series;
+        }
+        private static List<HomeChartPoint> getTargetSeries(QDbContext db, int Month, int Year)
+        {
+            var targets = db.Targets.Where(t => t.UserID == State.UserID && t.TargetDate.Month == Month && t.TargetDate.Year == Year).OrderBy(ev => ev.TargetDate);
+            List<HomeChartPoint> series = new List<HomeChartPoint>();
+            foreach (var t in targets)
+            {
+                series.Add(
+                    new HomeChartPoint
+                    {
+                        Name = t.Name,
+                        Day = t.TargetDate.Day,
+                        Amount = t.TargetAmount
+                    }
+                    );
+            }
+            return series;
+        }
         #endregion
 
         #region Target Chart
@@ -464,96 +443,102 @@ namespace Pocket.Controllers
             int month = DateTime.Now.Month;
             int year = DateTime.Now.Year;
 
-            var mbudget = getMonthBudget(DateTime.Now.Month, DateTime.Now.Year);
+            var mbudget = Pocket.Common.Global.getMonthBudget(db, DateTime.Now.Month, DateTime.Now.Year, false);
             
-            Highcharts chart = getTargetChart(mbudget);
 
-            return View(chart);
+            return View();
         }
 
-        private Highcharts getTargetChart(double mbudget)
+        
+        #endregion
+
+        #region Money Flow Chart
+        public ActionResult MoneyFlowChart()
         {
-            int userid = State.UserID;
+            int month = DateTime.Now.Month;
+            int year = DateTime.Now.Year;
 
-            var targets = from t in db.Targets
-                          where t.UserID == userid && t.Status == Common.TargetStatus.Active
-                          orderby t.TargetDate
-                          select t;
-            var totalIncome = from inc in db.Income
-                              where inc.UserID == userid
-                              group inc by inc.User into g
-                              select g.Sum(i=>i.Amount);
-            var initialAmount = from acc in db.Accounts
-                                where acc.UserID == userid
-                                group acc by acc.UserID into g
-                                select g.Sum(a => a.InitialAmount);
-            var totalExpense = from exp in db.Expenses
-                               where exp.UserID == userid
-                               group exp by exp.UserID into g
-                               select g.Sum(e => e.Amount);
-            var netSaving = totalIncome.FirstOrDefault() + initialAmount.FirstOrDefault() - totalExpense.FirstOrDefault();
+            return View();
+        }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public JsonResult JMoneyFlowChartData(int Month, int Year)
+        {
+            return MoneyFlowChartData<JsonResult>(Month, Year);
 
-            Highcharts chart = new DotNet.Highcharts.Highcharts("targetchart");
-            chart.InitChart(new Chart() { Type = ChartTypes.Column })
-                .SetTitle(new Title() { Text = "Targets" });
+        }
+        public JsonResult MMoneyFlowChartData(string YearMonth)
+        {
+            var dt = Util.FromDateTime(YearMonth);
+
+            return MoneyFlowChartData<JsonResult>(dt.Month, dt.Year);
+
             
-            chart.SetPlotOptions(new PlotOptions()
-            {
-                Column = new PlotOptionsColumn()
-                {
-                    Stacking = Stackings.Normal
-                    
-                }
+        }
+        public T MoneyFlowChartData<T>(int Month, int Year) where T : JsonResult
+        {
+            DateTime dtNow = new DateTime(Year, Month, 1);
+            DateTime dtTo = dtNow.AddMonths(1);
 
-            });
+            List<MFlowNode> nodes = new List<MFlowNode>();
+            MFlowNode parent = new MFlowNode { ID = "p_0", Name = "Accounts", Tooltip = "Accounts" };
+            nodes.Add(parent);
+            var accounts = Pocket.Common.Global.geAllUserAccounts(db).ToList();
+            foreach (var account in accounts)
+            {
+                var tExpenses = db.Expenses.Where(ex => ex.AccountID == account.AccountID && ex.ExpenseDate < dtNow).
+                                            Select(ex => ex.Amount).DefaultIfEmpty(0).Sum();
+                var tIncomes = db.Income.Where(inc => inc.AccountID == account.AccountID && inc.IncomeDate < dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
+                var transferIns = db.AccountTransfers.Where(t => t.TargetAccountID == account.AccountID && t.TransferDate < dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
+                var transferOuts = db.AccountTransfers.Where(t => t.SourceAccountID == account.AccountID && t.TransferDate < dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
+                var tsavings = db.Savings.Where(s => s.AccountID == account.AccountID && s.SavingDate < dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
 
-            chart.SetTooltip(new Tooltip
-            {
-                Formatter = "function(){return '<b>'+ this.x +'</b><br/>'+" +
-                        "this.series.name +': '+ this.y +'<br/>'+" + 
-                        "'Total: '+ this.point.stackTotal}"
-            });
-            
-            chart.SetXAxis(new XAxis()
-            {
-                Categories = new string[]{"Targets", "Saving"}
-            });
-            chart.SetYAxis(new YAxis()
-            {
-                AllowDecimals = false,
-                Min = 0,
-                //Max = mbudget,
-                Title = new YAxisTitle()
-                {
-                    Text = "Amount"
-                }
-                
+                account.CurrentAmount = tIncomes + transferIns - tExpenses - transferOuts - tsavings;
+               // account.CurrentAmount += account.InitialAmount;
 
-            });
-            chart.SetLegend(new Legend
-            {
-                Align = HorizontalAligns.Right,
-                X = -70,
-                VerticalAlign = VerticalAligns.Top,
-                Y = 20,
-                Floating = true,
-                BackgroundColor = new BackColorOrGradient(Color.White),
-                BorderColor = Color.Black,
-                BorderWidth = 1,
-                Shadow = false
+                MFlowNode accnode = new MFlowNode { ID = "acc_" + account.AccountID, Amount = account.CurrentAmount, Name = account.Name, ParentID = parent.ID };
 
-            });
-            List<Series> series = new List<Series>();
-            foreach (var t in targets)
-            {
-                Series s = new Series { Name = t.Name, Data = new Data(new object[] { t.TargetAmount, 0 }) };
-                series.Add(s);
+                var expenses = db.Expenses.Where(ex => ex.AccountID == account.AccountID && ex.ExpenseDate < dtTo && ex.ExpenseDate >= dtNow).
+                                            Select(ex => ex.Amount).DefaultIfEmpty(0).Sum();
+                MFlowNode exnode = new MFlowNode { ID = "ex_" + account.AccountID, Amount = expenses, Name = "Expenses", ParentID = accnode.ID };
+
+                var incomes = db.Income.Where(inc => inc.AccountID == account.AccountID && inc.IncomeDate < dtTo && inc.IncomeDate >= dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
+                MFlowNode incnode = new MFlowNode { ID = "inc_" + account.AccountID, Amount = incomes, Name = "Income", ParentID = exnode.ID };
+
+                var tIns = db.AccountTransfers.Where(t => t.TargetAccountID == account.AccountID && t.TransferDate < dtTo && t.TransferDate >= dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
+                MFlowNode tinode = new MFlowNode { ID = "ti_" + account.AccountID, Amount = tIns, Name = "Transfer In", ParentID = incnode.ID };
+
+                var tOuts = db.AccountTransfers.Where(t => t.SourceAccountID == account.AccountID && t.TransferDate < dtTo && t.TransferDate >= dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
+                MFlowNode tonode = new MFlowNode { ID = "to_" + account.AccountID, Amount = tOuts, Name = "Transfer Out", ParentID = tinode.ID };
+
+                var savings = db.Savings.Where(s => s.AccountID == account.AccountID && s.SavingDate < dtNow && s.SavingDate >= dtNow).
+                                            Select(i => i.Amount).DefaultIfEmpty(0).Sum();
+                MFlowNode snode = new MFlowNode { ID = "sav_" + account.AccountID, Amount = savings, Name = "Savings", ParentID = tonode.ID };
+
+                var remaining = account.CurrentAmount + incomes + tIns - expenses - tOuts - savings;
+                MFlowNode rnode = new MFlowNode { ID = "rem_" + account.AccountID, Amount = remaining, Name = "Remaining", ParentID = snode.ID };
+
+                nodes.Add(accnode);
+                nodes.Add(exnode);
+                nodes.Add(incnode);
+                nodes.Add(tinode);
+                nodes.Add(tonode);
+                nodes.Add(snode);
+                nodes.Add(rnode);
             }
-            series.Add(new Series { Name = "Saving", Data = new Data(new object[] {0, netSaving }) }); //
+            parent.Amount = nodes.Where(node => node.ID.StartsWith("acc_")).Select(n => n.Amount).DefaultIfEmpty(0).Sum();
+            var Data = nodes.Select(n => new object[] { new {v = n.ID, f = n.Text}, n.ParentID, n.Tooltip }).ToArray();
 
-            chart.SetSeries( series.ToArray() );
-            return chart;
+            return Util.Package<T>(Data);
+
         }
         #endregion
     }

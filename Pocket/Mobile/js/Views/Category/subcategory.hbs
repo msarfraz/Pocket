@@ -1,0 +1,49 @@
+    
+        <form id="subcategoryedit" class="list-block">
+            <input name="SubcatCategoryID" type="hidden" value="{{vmodel.CategoryID}}">
+            <input name="SubcategoryID" type="hidden" value="{{vmodel.SubcategoryID}}">
+        <ul>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-filing color-form-icon"></i></div>
+                    <div class="item-inner">
+                            <div class="item-title label">Name</div>
+                        <div class="item-input">
+                            <input name="SubcategoryName" type="text" placeholder="Subcategory Name" value="{{vmodel.Name}}" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-social-usd color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Budget</div>
+                        <div class="item-input">
+                            <input id="SubcategoryBudget" name="SubcategoryBudget" type="number" class="item-input" placeholder="Subcategory budget" value="{{vmodel.BudgetAmount}}" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <!-- Additional "smart-select" class -->
+                <a href="#" class="item-link smart-select" data-back-on-select="true">
+                    <!-- select -->
+                    <select name="SubcategoryBudgetDuration" class="subcat-budget-duration">
+                        {{#each vmodel.RepeatTypes}}
+                        <option value="{{value}}" >{{text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-refresh color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <!-- Select label -->
+                            <div class="item-title">Repeat</div>
+                            <!-- Selected value, not required -->
+                            <div class="item-after">{{vmodel.BudgetDurationText}} </div>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </form>

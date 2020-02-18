@@ -1,40 +1,98 @@
-﻿@model IEnumerable<Pocket.Models.Friend>
+﻿@model Pocket.Models.ApplicationUser
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Friends";
 }
 
-<h2>Index</h2>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/Common.js"></script>
 
+<style>
+        
+    .ui-tooltip {
+        width: 250px;
+    }
+</style>
 <p>
-    @Html.ActionLink("Create New", "Create") | @Html.ActionLink("Quick View", "List")
+
+
+    @using (Html.BeginForm("Index", "Friend", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        @Html.ValidationSummary(true)
+
+        <div class="row">
+            <div class="col-xs-4">
+                <div class="input-group">
+                    <span class="input-group-addon">Add Friend:</span>
+                    @Html.TextBoxFor(model => model.Email, new { title = "please provide friend's email address.", @class = "form-control", placeholder = "Email Address" })
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-default">
+                            <span class="glyphicon glyphicon-search"></span> Add</button>
+                    </span>
+</div>
+            </div>
+
+        </div>
+        @Html.ValidationMessageFor(model => model.Email)
+    }
 </p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.First().UserFriend.LoginID)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.First().UserFriend.Email)
-        </th>
-        <th></th>
-    </tr>
+<table id="lstFriend"></table>
+<div id="pgrFriend"></div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.UserFriend.LoginID)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UserFriend.Email)
-        </td>
-       
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.FriendID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.FriendID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.FriendID })
-        </td>
-    </tr>
-}
+<script type="text/javascript">
+    var tooltips = $("[title]").tooltip();
+    var colNames = ['UserID', 'Name', 'Email', 'Status'];
+    var colModel = [
+        { name: 'UserID', index: 'UserID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: false },
+        { name: 'Email', index: 'Email', width: 100, editable: false },
+        { name: 'Status', index: 'Status', width: 100, editable: false }
+        
 
-</table>
+    ];
+    createJQGrid('/Friend/jlist', colNames, colModel, 'UserID', "/Friend/jedit", "Friends List", "#lstFriend", '#pgrFriend', null, { sidx: 'Status', sord: 'asc',addgrid:false,editgrid:false });
+    </script>
+<br />
+<table id="lstPendingFriend"></table>
+<div id="pgrPendingFriend"></div>
+<script type="text/javascript">
+    var tooltips = $("[title]").tooltip();
+    var colNames = ['UserID', 'Name', 'Email', 'Status'];
+    var colModel = [
+        { name: 'UserID', index: 'UserID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: false },
+        { name: 'Email', index: 'Email', width: 100, editable: false },
+        { name: 'Status', index: 'Status', width: 100, formatter: ButtonFormatter }
+
+
+    ];
+    createJQGrid('/Friend/jpendinglist', colNames, colModel, 'UserID', "", "Friend Requests", "#lstPendingFriend", '#pgrPendingFriend', null, { sidx: 'Email', sord: 'asc', addgrid: false, editgrid: false });
+
+    function ButtonFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+
+        if (cellvalue && cellvalue.length > 0) {
+            var tag = "<input type='button' value='Approve' class='btn btn-info  btn-xs' onclick='ApproveFriend(\"" + cellvalue + "\")'/>"
+            return tag;
+        }
+        else
+            return "<label></label>";
+
+    }
+
+    function ApproveFriend(friendID) {
+        PostData("/Friend/JApproveFriend", { FriendID:friendID}, function(response){
+            $("#lstFriend").jqGrid().trigger('reloadGrid');
+            $("#lstPendingFriend").jqGrid().trigger('reloadGrid');
+        });
+        
+        
+    
+    }
+</script>
+

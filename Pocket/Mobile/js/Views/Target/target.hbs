@@ -1,0 +1,103 @@
+    <form id="targetedit">
+        <input name="TargetID" type="hidden" value="{{model.TargetID}}">
+        <div class="list-block">
+            <ul>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-pricetags-outline color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Name</div>
+                            <div class="item-input">
+                                <input name="TargetName" type="text" placeholder="Target Name" value="{{model.Name}}">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-calendar-outline color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Target Date</div>
+                            <div class="item-input">
+                                <input name="TargetDate" type="date" placeholder="Target Date" value="{{model.TargetDate}}">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-pricetag color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Amount</div>
+                            <div class="item-input">
+                                <input id="TargetAmount" name="TargetAmount" type="number" step="0.01" placeholder="Total Amount of target" value="{{model.TargetAmount}}">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-social-usd color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Available</div>
+                            <div class="item-input">
+                                <input id="TargetInitialAmount" name="TargetInitialAmount" type="number" step="0.01" placeholder="Initial Saving" value="{{model.InitialAmount}}">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                
+                {{#if model.TargetID}}
+                <li>
+                    <!-- Additional "smart-select" class -->
+                    <a href="#" class="item-link smart-select" data-back-on-select="true">
+                        <select name="TargetStatus" class="target-status">
+                            {{#each model.TargetStatuses}}
+                            <option value="{{value}}">{{text}}</option>
+                            {{/each}}
+                        </select>
+                        <div class="item-content">
+                            <div class="item-media"><i class="icon ion-checkmark-circled color-form-icon"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Status</div>
+                                <div class="item-after">{{model.StatusText}} </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                {{/if}}
+
+
+            </ul>
+        </div>
+        
+</form>
+    {{#if model.TargetID}}
+    <div class="content-block-title">Saving Status</div>
+    <div class="list-block inset">
+        <ul>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-ios-calendar-outline color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title">Created On</div>
+                        <div class="item-after">
+                            {{#to_date model.CreatedDateText}}{{/to_date}}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="Pages/SavingList.html?TargetID={{model.TargetID}}" class="item-link">
+                    <div class="item-content">
+                        <div class="item-media "><span class="badge bg-green"> <i class="icon ion-social-usd color-white"></i></span></div>
+                        <div class="item-inner">
+                            <div class="item-title">View Savings</div>
+                            <div class="item-after">{{model.SavingAmount}} </div>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+    {{/if}}

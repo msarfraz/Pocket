@@ -1,0 +1,36 @@
+{{#.}}
+
+	<li class="swipeout event-swipeout-{{EventID}}" id="{{EventID}}">
+        <a href="Pages/Event.html?id={{EventID}}" class="swipeout-content item-link item-content" data-event-id="{{EventID}}">
+            <div class="item-media"><span class="badge bg-orange "> <i class="icon ion-speakerphone"></i> </span> </div>
+            <div class="item-inner">
+                <div class="item-title-row">
+                    <div class="item-title">{{Name}}</div>
+                    <div class="item-after">{{Amount}}</div>
+                </div>
+                <div class="item-subtitle">{{#to_date EventDate}}{{/to_date}}</div>
+                {{#js_compare "this.EventStatus==2"}}
+                    <div class="color-red item-subtitle">{{EventStatusText}}</div>
+                {{/js_compare}}
+
+                {{#if UserName}}
+                <span class="badge bg-green">{{UserName}}</span>
+                {{/if}}
+            </div>
+        </a>
+        {{#if Editable}}
+    <div class="swipeout-actions-right">
+        <a href="#" class="event-delete-link bg-red" data-id="{{EventID}}">Delete</a>
+        {{#js_compare "!Template7.global.IsLocal"}}
+        <a href="Pages/ResourceFriendList.html?ResourceType=1&ResourceID={{EventID}}" class="event-share-link bg-green" data-id="{{EventID}}">Share</a>
+        {{else}}
+        <a href="#" class="bg-green" data-id="{{EventID}}">Share &nbsp; <span class="badge bg-gray">Pro</span></a>
+        {{/js_compare}}
+        
+    </div>
+        {{/if}}
+        <div class="swipeout-actions-left">
+            <a href="#" class="event-expenses-link bg-blue" data-id="{{EventID}}">Expenses</a>
+        </div>
+</li>
+{{/.}}

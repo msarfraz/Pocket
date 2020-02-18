@@ -1,4 +1,5 @@
-﻿using Pocket.Common;
+﻿using Newtonsoft.Json;
+using Pocket.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +12,7 @@ namespace Pocket.Models
     [Table("expenses")]
     public class Expense
     {
+        
         [Required()]
         [Column("expense_id", Order = 0)]
         [Key()]
@@ -18,8 +20,9 @@ namespace Pocket.Models
 
         [Required()]
         [Column("user_id")]
-        public int UserID { get; set; }
-        public virtual User User { get; set; }
+        public string UserID { get; set; }
+        [JsonIgnoreAttribute]
+        public virtual ApplicationUser User { get; set; }
 
         [Required()]
         [Column("account_id")]
@@ -54,12 +57,27 @@ namespace Pocket.Models
         [Column("schedule_id")]
         public int? ScheduleID { get; set; }
 
+        [Required()]
+        [Column("created_date")]
+        public DateTime CreatedDate { get; set; }
+
+        [Required()]
+        [Column("modified_date")]
+        public DateTime ModifiedDate { get; set; }
+
+        [JsonIgnoreAttribute]
         public virtual Schedule Schedule { get; set; }
+        [JsonIgnoreAttribute]
         public virtual Event Event { get; set; }
+        [JsonIgnoreAttribute]
         public virtual Subcategory Subcategory { get; set; }
+        [JsonIgnoreAttribute]
         public virtual Account Account { get; set; }
+        [JsonIgnoreAttribute]
         public virtual Payee Payee { get; set; }
+        [JsonIgnoreAttribute]
         public virtual Vendor Vendor { get; set; }
+        [JsonIgnoreAttribute]
         public virtual ICollection<ExpenseComment> Comments { get; set; }
     }
 }

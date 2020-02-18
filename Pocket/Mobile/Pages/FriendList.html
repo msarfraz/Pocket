@@ -1,0 +1,58 @@
+
+
+<div class="pages">
+	<div data-page="friendlist" class="page friendlist-page" data-pg-controller="friend" data-pg-init="initlist">
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left"><a href="#" class="link icon-only open-panel"><i class="icon icon-bars"></i></a></div>
+        <div class="center sliding friends-list-header">Contacts
+            
+        </div>
+        <div class="right">
+            <a href="Pages/Friend.html" class="link icon-only"><i class="icon icon-plus">+</i></a>
+        </div>
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar" data-search-list=".friends-list" data-search-in=".item-title">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content">
+            <div class="content-block">
+                <!-- Buttons row as tabs controller -->
+                <div class="buttons-row">
+                    <!-- Link to 1st tab, active -->
+                    <a href="#tab1" class="tab-link active button">My Contacts</a>
+                    <!-- Link to 2nd tab -->
+                    <a href="#tab2" class="tab-link button">New Requests</a>
+
+                </div>
+
+                
+            </div>
+            <div class="tabs">
+                <!-- Tab 1, active by default -->
+                <div id="tab1" class="tab active">
+                        <div class="list-block media-list friends-list searchbar-found">
+                            <ul></ul>
+                        </div>
+                </div>
+                <!-- Tab 2 -->
+                <div id="tab2" class="tab">
+                    <div class="list-block media-list friends-request-list">
+                        <ul></ul>
+                    </div>
+                </div>
+                
+            </div>
+
+        </div>
+	</div>
+</div>

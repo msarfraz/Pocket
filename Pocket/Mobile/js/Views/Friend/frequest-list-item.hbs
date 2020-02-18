@@ -1,0 +1,16 @@
+{{#.}}
+	<li id="{{UserID}}" class="swipeout">
+    <div class="swipeout-content item-content">
+        <div class="item-media"><i class="icon ion-person-add"></i></div>
+        <div class="item-inner">
+            <div class="item-title">{{UserName}}</div>
+            <div class="item-subtitle">{{Email}}</div>
+            <div class="item-subtitle">{{Status}}</div>
+        </div>
+    </div>
+    <div class="swipeout-actions-right">
+        <a href="#" class="approve-request bg-blue" data-fr-id="{{UserID}}">Approve</a>
+        <a href="#" class="reject-request bg-red" data-fr-id="{{UserID}}">Reject</a>
+    </div>
+</li>
+{{/.}}

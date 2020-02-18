@@ -3,65 +3,133 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My Pocket Application</title>
+    <link rel="icon" href="~/images/logo.png" />
+    <link rel="shortcut icon" href="~/images/logo.png" />
+    <title>@Pocket.Common.Global.ApplicationName</title>
     <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
     <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <script src="~/Scripts/modernizr-2.7.2.js"></script>
 
-   <link href="@Url.Content("~/Content/themes/redmond/jquery.ui.core.css")" 
-        rel="stylesheet" type="text/css" />
-    <link href="@Url.Content("~/Content/themes/redmond/jquery.ui.datepicker.css")" 
-        rel="stylesheet"  type="text/css" />
-    <link href="@Url.Content("~/Content/themes/redmond/jquery.ui.theme.css")" 
-        rel="stylesheet" type="text/css" />
-    <link href="~/Content/themes/redmond/jquery.ui.button.css" rel="stylesheet" />
-    @* <link href="~/Content/themes/start/jquery-ui-1.10.3.custom.css" rel="stylesheet" />*@
+    <link href="~/Content/themes/smoothness/jquery-ui.min.css" rel="stylesheet" />
 
-    <script src="~/Scripts/jquery-2.1.1.js"></script>
-    <script src="~/Scripts/jquery-ui-1.10.4.js"></script>
-    
-    
+    <link href="~/Content/QIE.css" rel="stylesheet" />
+
+    <script src="~/Scripts/jquery-2.1.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.10.4.min.js"></script>
+
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/QIE/Common.js"></script>
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top full-width affix">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("My Pocket", "Index", "Home", null, new { @class = "navbar-brand" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav"> 
-                    <li>@Html.ActionLink("Payees", "List", "Payee")</li>
-                    <li>@Html.ActionLink("Categories", "List", "Category")</li>
-                    <li>@Html.ActionLink("Accounts", "List", "QAccount")</li>
-                    <li>@Html.ActionLink("Income Sources", "List", "IncomeSource")</li>
-                    <li>@Html.ActionLink("Income", "List", "Income")</li>
-                    <li>@Html.ActionLink("Expenses", "List", "Expense")</li>
-                    <li>@Html.ActionLink("Events", "List", "Event")</li>
-                    <li>@Html.ActionLink("Friends", "List", "Friend")</li>
-                    <li>@Html.ActionLink("Targets", "List", "Target")</li>
-                    <li>@Html.ActionLink("Vendors", "List", "Vendor")</li>
-                    <li>@Html.ActionLink("Summary", "Index", "Report")</li>
-                    @*<li>@Html.ActionLink("Notifications", "List", "Notification")</li>*@
-                </ul>
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="navbar-inner">
+
+
+            <div class="container">
+
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        
+                        @if(Request.IsAuthenticated)
+                {
+                            <a href="/Home/Default" class="navbar-brand"><img src="~/images/logo.png" /> @Pocket.Common.Global.ApplicationName</a>
+
+                }
+
+                        else
+                        {
+                            <a href="/Home/Index" class="navbar-brand"><img src="~/images/logo.png" /> @Pocket.Common.Global.ApplicationName</a>
+                }
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        
+                            @using Microsoft.AspNet.Identity
+                            @if (Request.IsAuthenticated)
+{
+    <ul class="nav nav-pills" id="myTab">
+        <li><a href="/QAccount/"><span class="glyphicon glyphicon-briefcase"></span> Accounts</a> </li>
+        <li><a href="/Income/"><span class="glyphicon glyphicon-usd"></span> Income</a> </li>
+        <li><a href="/Expense/"><span class="glyphicon glyphicon-shopping-cart"></span> Expense</a> </li>
+        <li><a href="/Event/"><span class="glyphicon glyphicon-bullhorn"></span> Events</a> </li>
+        <li><a href="/Friend/"><span class="glyphicon glyphicon-user"></span><span class="glyphicon glyphicon-user"></span> Friends</a> </li>
+
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                <span class="glyphicon glyphicon-wrench"></span> Settings <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>@Html.ActionLink("Payees", "Index", "Payee")</li>
+                <li>@Html.ActionLink("Categories", "Index", "Category")</li>
+                <li>@Html.ActionLink("Income Sources", "Index", "IncomeSource")</li>
+                <li>@Html.ActionLink("Vendors", "Index", "Vendor")</li>
+                
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                <span class="glyphicon glyphicon-tasks"></span>  Summary <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li class="nav-header"><a><span class="glyphicon glyphicon-tasks"></span> Reports</a></li>
+                <li class="divider"></li>
+                <li><a href="/Report/CategoryReport"><span class="glyphicon glyphicon-list-alt"></span> Category Report</a> </li>
+                <li><a href="/Report/AccountReport"><span class="glyphicon glyphicon-list"></span> Account Report</a> </li>
+                <li><a href="/Report/EventReport"><span class="glyphicon glyphicon-th-list"></span> Events Report</a> </li>
+                <li><a href="/Report/GroupReport"><span class="glyphicon glyphicon-list-alt"></span> Group Report</a> </li>
+                <li><a href="/Report/AdvanceFilter"><span class="glyphicon glyphicon-list"></span> Advance Report</a> </li>
+                <li><a href="/Target/Index"><span class="glyphicon glyphicon-tower"></span> Targets</a> </li>
+                <li class="divider"></li>
+                <li><a><span class="glyphicon glyphicon-stats"></span> Charts</a></li>
+                <li class="divider"></li>
+
+                <li><a href="/Chart/CategoryChart"><span class="glyphicon glyphicon-picture"></span> Category Chart</a> </li>
+                <li><a href="/Chart/SubcatChart"><span class="glyphicon glyphicon-signal"></span> Subcategories Chart</a> </li>
+                <li><a href="/Chart/EventChart"><span class="glyphicon glyphicon-align-left"></span> Events Chart</a> </li>
+                @*<li><a href="/Chart/TargetChart"><span class="glyphicon glyphicon-align-right"></span> Targets Chart</a> </li>*@
+                <li><a href="/Chart/HomepageChart"><span class="glyphicon glyphicon-stats"></span> Combo Chart</a> </li>
+                @*<li><a href="/Chart/MoneyFlowChart"><span class="glyphicon glyphicon-stats"></span> Money Flow</a> </li>*@
+            </ul>
+        </li>
+        @Html.Partial("_LoginPartial")
+    </ul>
+}
+                        @if (!Request.IsAuthenticated)
+                        {
+                            @Html.Partial("_LoginPartial")
+                        }
+                    </div>
             </div>
         </div>
     </div>
-
     <div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My Pocket Application</p>
+            <p>&copy; @DateTime.Now.Year - @Pocket.Common.Global.ApplicationName</p>
         </footer>
     </div>
 
-    <script src="~/Scripts/bootstrap.min.js"></script>
-    @Scripts.Render("~/bundles/jquery")
+    
         @RenderSection("scripts", required: false)
+    <div id="CRequestBody">
+
+    </div>
+    <script type="text/javascript">
+        function ShowCustomerRequest() {
+            $("#CRequestBody").load("/Home/CustRequest", function (response, status, xhr) {
+                $("#crequest").modal('show');
+                $('#crequest').on('hidden.bs.modal', function (e) {
+                    $("#CRequestBody").html("");
+                });
+            });
+
+        }
+    </script>
+
+    
 </body>
 </html>

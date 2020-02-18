@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Pocket.Common;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -18,9 +20,10 @@ namespace Pocket.Models
         [Required()]
         [Column("user_id")]
         [ForeignKey("User")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
-        public virtual User User { get; set; }
+        [JsonIgnoreAttribute]
+        public virtual ApplicationUser User { get; set; }
 
         [Required()]
         [Display(Name = "Account Name", Description = "Name of Account")]
@@ -33,5 +36,13 @@ namespace Pocket.Models
 
         [Column("current_amount")]
         public double CurrentAmount { get; set; }
+        
+        [Column("account_type")]
+        public AccountType AccountType { get; set; }
+
+        [JsonIgnoreAttribute]
+        [ForeignKey("AccountID")]
+        [Display(Name = "Shared With Friends", Description = "Shared With Friends")]
+        public virtual ICollection<AccountUser> SharedFriends { get; set; }
     }
 }

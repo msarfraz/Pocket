@@ -1,59 +1,247 @@
-﻿@model IEnumerable<Pocket.Models.Expense>
-
+﻿
+@using Pocket.Common
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Expenses";
 }
 
-<h2>Index</h2>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<link href="~/Content/themes/redmond/jquery.ui.datepicker.css" rel="stylesheet" />
+<link href="~/Content/themes/redmond/jquery.ui.dialog.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-select.css" rel="stylesheet" />
 
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/DatePickerReady.js"></script>
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+
+<style>
+
+.special {
+    font-style: italic;
+    font-weight: bold !important;
+    color: #808080 !important;
+    background:#d1e6f5;
+  }
+.ui-jqgrid-bdiv
+{
+overflow-x : hidden !important;
+}
+</style>
 <p>
-    @Html.ActionLink("Create New", "Create") | @Html.ActionLink("Quick View", "List")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Payee.Name)
-        </th>
+        <div class="row">
+            <div class="col-xs-4">
+                <div class="input-group">
+                    <span class="input-group-addon">From:</span>
+                    @Html.TextBox("ExpenseFrom", new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToDateString(), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="input-group">
+                    <span class="input-group-addon">To:</span>
+                    @Html.TextBox("ExpenseTo", DateTime.Now.MonthLastDate().ToDateString(), new { @class = "form-control" })
+                </div>
+                
+            </div>
         
-        <th>
-            @Html.DisplayNameFor(model => model.AccountID)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.SubcategoryID)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Amount)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ExpenseDate)
-        </th>
-        <th></th>
-    </tr>
+            
+        </div>
+</p>
+<table id="rowed2"></table>
+<div id="prowed2"></div>
+<p >
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Payee.Name)
-        </td>
+    <div class="btn-group">
+        <div class="btn-group">
+            <a href="/Expense/" class="btn btn-primary">Simple View</a>
+        </div>
+        <div class="btn-group">
+            <a href="/Report/GroupReport" class="btn btn-default">Group View</a>
+        </div>
+        <div class="btn-group">
+            <a href="/Report/CategoryReport" class="btn btn-default">Category View</a>
+        </div>
+
+
+        <div class="col-xs-4">
+
+            <div class="input-group">
+                <span class="input-group-addon">Choose Columns:</span>
+                <select class="selectpicker" multiple data-selected-text-format="count>3" id="pagecolumns" onchange="ShowHideColumn()">
+                    <option value="PayeeID">Payee</option>
+                    <option value="VendorID">Vendor</option>
+                    <option value="EventID">Event</option>
+                    <option value="Comments">Comments</option>
+                    <option value="UserID" disabled="disabled">User Name</option>
+                </select>
+
+            </div>
+        </div>
+    </div>
+</p>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
        
-        <td>
-            @Html.DisplayFor(modelItem => item.Account.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Subcategory.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Amount)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ExpenseDate)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ExpenseID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ExpenseID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ExpenseID })
-        </td>
-    </tr>
-}
+        $(function () {
+            $("#ExpenseFrom").datepicker({
+                onSelect: function (dateText) {
+                    ReloadGrid();
+                }
+            });
+        });
+        $(function () {
+            $("#ExpenseTo").datepicker({
+                onSelect: function (dateText) {
+                    ReloadGrid();
+                }
+            });
+        });
+        $('.selectpicker').selectpicker();
+        //ShowHideColumn();
+    });
+    var cats;
 
-</table>
+    PostData("/category/JCategoryValues", {}, function (data) {
+        cats = data;
+    }, false);
+
+    function ShowHideColumn()
+    {
+        var str = $("#pagecolumns").val();
+        SetGridColumns(str);
+        setPageSettings(str.join());
+    }
+    function getPageSettings() {
+        PostData("/User/GetPageSettings", {}, function (response) {
+            SetGridColumns(response.PageSetting.split(","));
+            $("#pagecolumns").selectpicker('val', response.PageSetting.split(","));
+        });
+    }
+    function setPageSettings(psetting) {
+        PostData("/User/SetPageSettings", { PageSetting:psetting });
+    }
+    function SetGridColumns(str)
+    {
+        jQuery("#rowed2").jqGrid('hideCol', ["PayeeID", "VendorID", "EventID", "Comments"]);
+        jQuery("#rowed2").jqGrid('showCol', str);
+        jQuery("#rowed2").setGridWidth($(".container").width() - 5, true);
+    }
+    function ReloadGrid()
+    {
+        jQuery("#rowed2").jqGrid().trigger("reloadGrid");
+    }
+
+    var colNames = ['ExpenseID', 'Expense Date', 'Category', 'Account', 'Amount','Description', 'Payee', 'Vendor', 'Event', 'Comments', 'Auto Repeat'];
+    var colModel = [
+        { name: 'ExpenseID', index: 'ExpenseID', width: 55, key: true, hidden: true },
+       {
+           name: 'ExpenseDate', index: 'ExpenseDate', editable: true, width:75, sorttype: "date", datefmt: 'mm/dd/yyyy', editoptions: {
+               dataInit: function (el) {
+                   $(el).datepicker({ dateFormat: 'mm/dd/yy' });
+               },
+               
+           },
+           editrules: { required: true, date: true }
+       },
+        {
+            name: 'SubcategoryID', index: 'SubcategoryID', formatter: 'select', editable: true, edittype: 'select', editoptions: { value: cats, dataUrl: '/category/JCategories' }, editrules: { required: true } ,
+            cellattr: function (rowId, value, rawObject, cm, rdata) {
+                return ' data-val="' + rawObject[2] + '"';
+            },
+            unformat: function (cellText, options, scell) {
+                var abc = scell.attributes['data-val'].value;
+                return abc;
+            },
+            dataInit: function (el) {
+                $(el).selectpicker();
+            }
+        },
+        { name: 'AccountID', index: 'AccountID', editable: true, edittype: 'select', editoptions: { dataUrl: '/qaccount/JAccounts' }, editrules: { required: true } },
+        { name: 'Amount', index: 'Amount', width:75, editable: true,sorttype:'number',summaryType:'sum', editrules: { required: true, number: true } },
+        { name: 'Description', index: 'Description', editable: true, edittype: "textarea", editoptions: { rows: "2", cols: "20" } },
+    { name: 'PayeeID', index: 'PayeeID', editable: true, hidden: true, edittype: 'select', editoptions: { dataUrl: '/payee/JPayees' } },
+
+        { name: 'VendorID', index: 'VendorID', editable: true, hidden: true, edittype: 'select', editoptions: { dataUrl: '/vendor/JVendors' } },
+    { name: 'EventID', index: 'EventID', editable: true, hidden: true, edittype: 'select', editoptions: { dataUrl: '/event/JEvents' } },
+    { name: 'Comments', index: 'Comments',  editable: false, hidden: true, formatter: CommentFormatter },
+    { name: 'Repeat', index: 'Repeat', editable: true, edittype: 'select', editrules: { required: false, select: true }, editoptions: { dataUrl: '/api/common/RecursionOptions' } }
+    ];
+
+    var postData = {};
+    postData["ExpenseFrom"] = function () { return $("#ExpenseFrom").val() };
+    postData["ExpenseTo"] = function () { return $("#ExpenseTo").val(); };
+
+    createJQGrid('/expense/jlist', colNames, colModel, 'ExpenseID', "/expense/jedit", "Expense List", "#rowed2", '#prowed2', postData, { sidx: 'ExpenseDate', sord: 'desc', delgrid: true, delurl: '/expense/jdelete', footerrow: true, loadComplete: loadCompleteFunc });
+    function loadCompleteFunc() {
+        var grid = $("#rowed2"),
+            sum = grid.jqGrid('getCol', 'Amount', false, 'sum');
+
+        grid.jqGrid('footerData', 'set', { ExpenseDate: 'Total:', Amount: sum.toFixed(2) });
+        getPageSettings();
+    }
+    
+    /////////////////////
+    //   Expense Comments
+    ///////////////////////
+
+    function CommentFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+
+        if (cellvalue && cellvalue.length > 0) {
+
+            var tag = "<a href='#' onclick='ShowComments(" + rowObject[0] + ")'>" + cellvalue + " <span class='glyphicon glyphicon-comment'></span></a>";
+            return tag;
+        }
+        else
+            return "<label></label>";
+    }
+
+    function ShowComments(expenseID) {
+        $("#hdnExpenseID").val(expenseID);
+
+        if (firsttime)
+        {
+            $("#commentsModal").modal('show');
+
+            var commPostData = {};
+            commPostData["ExpenseID"] = function () { return $("#hdnExpenseID").val() };
+
+            createJQGrid('/expense/JExpenseComments', commColNames, commColModel, 'CommentID', "/expense/jcommentedit", "Add/View Comments", "#lstComments", '#pgrComments', commPostData, { sidx: 'CommentID', sord: 'desc',editgrid:false, editExtraParams: { ExpenseID: function () { return $("#hdnExpenseID").val() } } });
+            firsttime = false;
+        }
+        $("#commentsModal").modal('show');
+
+        jQuery("#lstComments").jqGrid().trigger("reloadGrid");
+    }
+
+    var commColNames = ['CommentID', 'ExpenseID', 'Comment', 'By', 'Date'];
+    var commColModel = [
+        { name: 'CommentID', index: 'CommentID', key: true, hidden: true },
+        { name: 'ExpenseID', index: 'ExpenseID', hidden: true },
+        { name: 'Comment', index: 'Comment',width:300, key: true, editable: true, edittype: "textarea", editoptions: { rows: "5", cols: "40" } },
+        { name: 'UserID', index: 'UserID', editable: false },
+        { name: 'CommentDate', index: 'CommentDate', width: 75, editable: false }
+    ];
+    var firsttime = true;
+    
+
+    </script>
+<input type="hidden" id="hdnExpenseID"/>
+
+<div id="commentsModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title">Comments</h5>
+            </div>
+            <div class="modal-body">
+                <table id="lstComments" style="height:100%"></table>
+                <div id="pgrComments"></div>
+            </div>
+        </div>
+    </div>
+</div>

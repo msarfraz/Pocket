@@ -8,18 +8,20 @@ using System.Web.Security;
 
 namespace Pocket.Models
 {
-
-
-    public class RegisterExternalLoginModel
+    public class ExternalLoginConfirmationViewModel
     {
         [Required]
         [Display(Name = "User name")]
         public string UserName { get; set; }
 
-        public string ExternalLoginData { get; set; }
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; }
+
     }
 
-    public class LocalPasswordModel
+    public class ManageUserViewModel
     {
         [Required]
         [DataType(DataType.Password)]
@@ -36,9 +38,10 @@ namespace Pocket.Models
         [Display(Name = "Confirm new password")]
         [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+
     }
 
-    public class LoginModel
+    public class LoginViewModel
     {
         [Required]
         [Display(Name = "User name")]
@@ -53,7 +56,7 @@ namespace Pocket.Models
         public bool RememberMe { get; set; }
     }
 
-    public class RegisterModel
+    public class RegisterViewModel
     {
         [Required]
         [Display(Name = "User name")]
@@ -81,5 +84,6 @@ namespace Pocket.Models
         public string Provider { get; set; }
         public string ProviderDisplayName { get; set; }
         public string ProviderUserId { get; set; }
+
     }
 }

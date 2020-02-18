@@ -8,13 +8,14 @@ namespace Pocket.ViewModels
 {
     public class EventFriends
     {
-        public EventFriends(QDbContext db, int UserID, int EventID)
+        public EventFriends(QDbContext db, string UserID, int EventID)
        {
-           User u = db.Users.Find(UserID);
-           List<Friend> friends = u.Friends;
+           ApplicationUser u = db.Users.Find(UserID);
+           List<Friend> friends = u.Friends.Where(f=>f.Status == Common.FriendStatus.Approved).ToList();
+
            List<EventUser> efriends = u.Events.Find(e=>e.EventID==EventID).SharedFriends;
-           Friends = new List<User>();
-           EFriends = new List<User>();
+           Friends = new List<ApplicationUser>();
+           EFriends = new List<ApplicationUser>();
            foreach (EventUser eu in efriends)
            {
                EFriends.Add(eu.User);
@@ -30,23 +31,23 @@ namespace Pocket.ViewModels
             this.EventID = EventID;
         }
         public int EventID { get; set; }
-        public List<User> EFriends { get; set; }
-        public List<User> Friends { get; set; }
+        public List<ApplicationUser> EFriends { get; set; }
+        public List<ApplicationUser> Friends { get; set; }
 
         public string FriendsString()
         {
-            return string.Join(",", Friends.Select(f => f.FirstName + " " + f.LastName));
+            return string.Join(",", Friends.Select(f => f.UserName));
         }
         public string EFriendsString()
         {
-            return string.Join(",", EFriends.Select(f => f.FirstName + " " + f.LastName));
+            return string.Join(",", EFriends.Select(f => f.UserName));
         }
 
         public void SplitFriends(QDbContext db)
         {
             if (Friends==null)
             {
-                Friends = new List<User>();
+                Friends = new List<ApplicationUser>();
             }
             for(int i=0;i<Friends.Count;i++)
             {

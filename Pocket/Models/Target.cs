@@ -10,7 +10,6 @@ using System.Web;
 
 namespace Pocket.Models
 {
-    [KnownType(typeof(User))]
     [Table("targets")]
     public class Target
     {
@@ -28,12 +27,20 @@ namespace Pocket.Models
         public double TargetAmount { get; set; }
 
         [Required()]
+        [Column("initial_amount")]
+        public double InitialAmount { get; set; }
+
+        [Required()]
         [Column("expected_date")]
         public DateTime ExpectedDate { get; set; }
 
         [Required()]
         [Column("target_date")]
         public DateTime TargetDate { get; set; }
+
+        [Required()]
+        [Column("created_date")]
+        public DateTime CreatedDate { get; set; }
 
         [Required()]
         [Display(Name = "Target Name", Description = "Name of Target")]
@@ -49,9 +56,20 @@ namespace Pocket.Models
         [Required()]
         [Column("user_id")]
         [ForeignKey("User")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
-        
-        public virtual User User { get; set; }
+        [Required()]
+        [Column("budget_id")]
+        [ForeignKey("Budget")]
+        public int BudgetID { get; set; }
+
+        public virtual Budget Budget { get; set; }
+
+        [Required()]
+        [Column("budgeted")]
+        public YesNoOptions Budgeted { get; set; }
+
+        public virtual ApplicationUser User { get; set; }
+        public virtual ICollection<Saving> Savings { get; set; }
     }
 }

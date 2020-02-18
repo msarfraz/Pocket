@@ -8,9 +8,11 @@ using System.Web;
 using System.Web.Mvc;
 using Pocket.Common;
 using Pocket.Models;
+using Pocket.Extensions;
 
 namespace Pocket.Controllers
 {
+    [Authorize]
     public class SubcatController : Controller
     {
         private QDbContext db = new QDbContext();
@@ -22,137 +24,7 @@ namespace Pocket.Controllers
             return View(subcategories);
         }
 
-        // GET: /Subcat/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Subcategory subcategory = db.Subcategories.Find(id);
-            if (subcategory == null)
-            {
-                return HttpNotFound();
-            }
-            return View(subcategory);
-        }
-
-        // GET: /Subcat/Create
-        public ActionResult Create()
-        {
-            //ViewBag.BudgetID = new SelectList(db.Budgets, "BudgetID", "BudgetID");
-            //ViewBag.CategoryID = new SelectList(db.Categories, "CategoryID", "Name");
-            //ViewBag.IconID = new SelectList(db.Icons, "IconID", "Name");
-            return View();
-        }
-
-        // POST: /Subcat/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "CategoryID,Name,Budget_BudgetAmount")] int CategoryID, string Name, int Budget_BudgetAmount)
-        {
-            if (ModelState.IsValid)
-            {
-                Category cat = db.Users.Find(State.UserID).Categories.Find(c => c.CategoryID == CategoryID);
-                if (cat != null)
-                {
-                    Subcategory subcat = new Subcategory();
-                    subcat.CategoryID = CategoryID;
-                    subcat.Name = Name;
-                    Budget budge = new Budget();
-                    budge.BudgetAmount = Budget_BudgetAmount;//.HasValue ? BudgetAmount.Value : 0;
-                    budge.UserID = State.UserID;
-                    db.Budgets.Add(budge);
-                    db.SaveChanges();
-                    subcat.BudgetID = budge.BudgetID;
-
-                    db.Subcategories.Add(subcat);
-                    db.SaveChanges();
-
-                    return RedirectToAction("Index");
-                }
-                
-            }
-            
-            return View();
-        }
-
-        // GET: /Subcat/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Subcategory subcategory = db.Subcategories.Find(id);
-            if (subcategory == null)
-            {
-                return HttpNotFound();
-            }
-            if (subcategory.Category.UserID != State.UserID)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            return View(subcategory);
-        }
-
-        // POST: /Subcat/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include="SubcategoryID,Name,Budget.BudgetAmount")] Subcategory scat)
-        {
-            if (ModelState.IsValid)
-            {
-                Category cat = db.Users.Find(State.UserID).Categories.Find(c => c.Subcategories.Find(sc => sc.SubcategoryID == scat.SubcategoryID) != null);
-                if(cat != null)
-                {
-                    Subcategory subcat = cat.Subcategories.Find(sc => sc.SubcategoryID == scat.SubcategoryID);
-
-                    subcat.Name = scat.Name;
-                    db.Entry(subcat).State = EntityState.Modified; 
-                    
-                    Budget budge = db.Users.Find(State.UserID).Budgets.Find(b => b.BudgetID == subcat.BudgetID);
-                    budge.BudgetAmount = scat.Budget.BudgetAmount;
-                    db.Entry(budge).State = EntityState.Modified;
-                    db.SaveChanges();
-
-                    return RedirectToAction("Index");
-                }
-                
-            }
-            return View();
-        }
-
-        // GET: /Subcat/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Subcategory subcategory = db.Subcategories.Find(id);
-            if (subcategory == null)
-            {
-                return HttpNotFound();
-            }
-            return View(subcategory);
-        }
-
-        // POST: /Subcat/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            Subcategory subcategory = db.Subcategories.Find(id);
-            db.Subcategories.Remove(subcategory);
-            db.SaveChanges();
-            return RedirectToAction("Index");
-        }
-
+       
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -173,7 +45,7 @@ namespace Pocket.Controllers
                 sidx = "SubcategoryID";
             if (string.IsNullOrEmpty(sord))
                 sord = "asc";
-            if (Request.IsAjaxRequest() && CategoryID != null)
+            if (CategoryID != null)
             {
                 Category category = db.Users.Find(State.UserID).Categories.Find(cat => cat.CategoryID == CategoryID);
                 if (category != null)
@@ -186,7 +58,7 @@ namespace Pocket.Controllers
                             select new
                             {
                                 SubcategoryID = subcategory.SubcategoryID,
-                                cell = new string[] { subcategory.SubcategoryID.ToString(), subcategory.CategoryID.ToString(), subcategory.Name.ToString(), subcategory.Budget.BudgetAmount.ToString(), Global.RepeatToString(RepeatPattern.Monthly) }
+                                cell = new string[] { subcategory.SubcategoryID.ToString(), subcategory.CategoryID.ToString(), subcategory.Name.ToString(), subcategory.Budget.BudgetAmount.ToString(), subcategory.Budget.BudgetDuration.String() }
                             }).ToArray();
                     }
                     );
@@ -198,12 +70,22 @@ namespace Pocket.Controllers
             return Json(new HttpStatusCodeResult(HttpStatusCode.BadRequest));
 
         }
+        [HttpPost]
+        public JsonResult MEdit(int SubcategoryID, int CategoryID, string Name, int BudgetAmount, int BudgetDuration)
+        {
+            return Edit<JsonResult>(SubcategoryID, CategoryID, Name, BudgetAmount, BudgetDuration);
+        }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public JsonResult JEdit([Bind(Include = "SubcategoryID, CategoryID,Name, BudgetAmount,Recursive")] int SubcategoryID, int CategoryID, string Name, int BudgetAmount, int? Recursive)
+        public JsonResult JEdit([Bind(Include = "SubcategoryID, CategoryID,Name, BudgetAmount,BudgetDuration")] int SubcategoryID, int CategoryID, string Name, int BudgetAmount, int BudgetDuration)
         {
-            if (Request.IsAjaxRequest() && ModelState.IsValid)
+            return Edit<JsonResult>(SubcategoryID, CategoryID, Name, BudgetAmount, BudgetDuration);
+        }
+
+        private T Edit<T>(int SubcategoryID, int CategoryID, string Name, int BudgetAmount, int BudgetDuration)where T:JsonResult
+        {
+            if (ModelState.IsValid)
             {
                 Category category = db.Users.Find(State.UserID).Categories.Find(cat => cat.CategoryID == CategoryID);
                 Subcategory subcategory = new Subcategory();
@@ -217,7 +99,7 @@ namespace Pocket.Controllers
                         
                         Budget budge = new Budget();
                         budge.BudgetAmount = BudgetAmount;//.HasValue ? BudgetAmount.Value : 0;
-                        budge.BudgetDuration = RepeatPattern.Monthly;// Recursive;
+                        budge.BudgetDuration = (RepeatPattern)BudgetDuration;
                         budge.UserID = State.UserID;
                         db.Budgets.Add(budge);
                         db.SaveChanges();
@@ -231,24 +113,45 @@ namespace Pocket.Controllers
                         subcategory = category.Subcategories.Find(sc => sc.SubcategoryID == SubcategoryID); 
                         subcategory.Name = Name;
                         subcategory.Budget.BudgetAmount = BudgetAmount;
-                        subcategory.Budget.BudgetDuration = RepeatPattern.Monthly;
+                        subcategory.Budget.BudgetDuration = (RepeatPattern)BudgetDuration;
                         db.Entry(subcategory).State = EntityState.Modified;
                     }
                     db.SaveChanges();
-                    return Json(new
-                    {
-                        success = true,
-                        message = "success",
-                        new_id = subcategory.CategoryID
-                    });
+                    return Repository.Success<T>(subcategory.SubcategoryID);
                 }
             }
-            return Json(new
-            {
-                success = false,
-                message = "Model state is invalid.",
-                new_id = 0
-            });
+            return Repository.Failure<T>();
+        }
+        [HttpPost]
+        public JsonResult MDelete(int SubcategoryID)
+        {
+            return Delete<JsonResult>(SubcategoryID);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public JsonResult JDelete(int SubcategoryID)
+        {
+            return Delete<JsonResult>(SubcategoryID);
+        }
+
+        private T Delete<T>(int SubcategoryID) where T : JsonResult
+        {
+                try
+                {
+                    Subcategory subcat = db.Subcategories.Where(s => s.Category.UserID == State.UserID && s.SubcategoryID == SubcategoryID).FirstOrDefault();
+                    if (subcat != null)
+                    {
+                        db.Subcategories.Remove(subcat);
+                        db.SaveChanges();
+                        return Repository.Success<T>(subcat.SubcategoryID);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+return Repository.DelFailure<T>();
         }
     }
 }

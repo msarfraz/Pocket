@@ -1,47 +1,115 @@
-﻿@model IEnumerable<Pocket.Models.Account>
-
-@{
-    ViewBag.Title = "Index";
+﻿@{
+    ViewBag.Title = "Accounts";
 }
 
-<h2>Index</h2>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<br />
+<table id="lstAccount"></table>
+<div id="pgrAccount"></div>
+<br />
+<table id="lstOtherAccount"></table>
+<div id="pgrOtherAccount"></div>
+<br />
+<table id="lstTransfer"></table>
+<div id="pgrTransfer"></div>
 
-<p>
-    @Html.ActionLink("Create New", "Create") | @Html.ActionLink("Quick View", "List")
-</p>
-<table class="table">
-    <tr>
+
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['AccountID', 'Name', 'Initial Amount', 'Account Type', 'Current Amount', 'Shared'];
+    var colModel = [
+        { name: 'AccountID', index: 'AccountID', width: 55, key: true, hidden:true},
+        { name: 'Name', index: 'Name', width: 100, editable: true, editrules: { required: true }, formatter: 'showlink', formatoptions: { baseLinkUrl: '/Report/AccountReport/' } },
+        { name: 'InitialAmount', index: 'InitialAmount', width: 100, editable: true, editrules: { required: true, number: true } },
+        { name: 'AccountType', index: 'AccountType', width: 100, editable: true, edittype: 'select', editrules: { required: true }, editoptions: { dataUrl: '/qaccount/JAccountTypes' } },
+    { name: 'CurrentAmount', index: 'CurrentAmount', width: 100, editable: false },
+    { name: 'Shared', formatter: ShareFormatter, editable: false }
+
+    ];
+    createJQGrid('/qaccount/jlist', colNames, colModel, 'AccountID', "/qaccount/jedit", "Account List", "#lstAccount", '#pgrAccount', null, { sidx: 'Name', sord: 'asc', delgrid: true, delurl: '/qaccount/jdelete', footerrow: true, loadComplete: loadCompleteFunc });
+    function loadCompleteFunc() {
+        var grid = $("#lstAccount"),
+            sum = grid.jqGrid('getCol', 'CurrentAmount', false, 'sum');
+
+        grid.jqGrid('footerData', 'set', { Name: 'Total:', CurrentAmount: sum.toFixed(2) });
+    }
+    var OtherColNames = ['AccountID', 'Name', 'Initial Amount', 'Account Type', 'Current Amount', 'Shared Users'];
+    var OtherColModel = [
+        { name: 'AccountID', index: 'AccountID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: true, editrules: { required: true }, formatter: 'showlink', formatoptions: { baseLinkUrl: '/Report/AccountReport/' } },
+        { name: 'InitialAmount', index: 'InitialAmount', width: 100, editable: true, editrules: { required: true, number: true } },
+        { name: 'AccountType', index: 'AccountType', width: 100, editable: true, edittype: 'select', editrules: { required: true }, editoptions: { dataUrl: '/qaccount/JAccountTypes' } },
+        { name: 'CurrentAmount', index: 'CurrentAmount', width: 100, editable: false },
+        { name: 'Friends', formatter: BulletFormatter, editable: false }
+    ];
+    createJQGrid('/qaccount/jlistother', OtherColNames, OtherColModel, 'AccountID', "", "Shared Accounts", "#lstOtherAccount", '#pgrOtherAccount', null, { sidx: 'Name', sord: 'asc', addgrid: false, editgrid: false });
+
+    
+    var transferColNames = ['TransferID','Date', 'From', 'To', 'Amount', 'Description'];
+    var transferColModel = [
+        { name: 'TransferID', index: 'TransferID', width: 55, key: true, hidden: true },
+        {
+            name: 'TransferDate', index: 'TransferDate', width: 100, editable: true, sorttype: "date", datefmt: 'mm/dd/yyyy', editoptions: {
+                dataInit: function (el) {
+                    $(el).datepicker({ dateFormat: 'mm/dd/yy' });
+                },
+
+            },
+            editrules: { required: true, date: true }
+        },
+        { name: 'SourceAccount', index: 'SourceAccount', width: 100, editable: true, edittype: 'select', editoptions: { dataUrl: '/qaccount/JSourceAccounts' }, editrules: { required: true } },
+        { name: 'TargetAccount', index: 'TargetAccount', width: 100, editable: true, edittype: 'select', editoptions: { dataUrl: '/qaccount/JAccounts' }, editrules: { required: true } },
+        { name: 'Amount', index: 'Amount', width: 100, editable: true, editrules: { required: true, number: true } },
+        { name: 'Description', index: 'Description', width: 100, editable: true, }
+    ];
+
+    createJQGrid('/qaccount/jtransferlist', transferColNames, transferColModel, 'TransferID', "/qaccount/jtransferedit", "Account Transfers", "#lstTransfer", '#pgrTransfer', null, { sidx: 'TransferDate', sord: 'desc', delgrid: true, delurl: '/qaccount/jtransferdelete' });
+
+    function ShareFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        var accountID = rowObject[0];
+
+        var tag;
+        if (cellvalue == "False")
+            tag = "<button type='button' class='btn btn-default btn-xs' onclick='showf(this)' data-original-acc='" + accountID + "'><span class='glyphicon glyphicon-unchecked'></span> Shared</button>";
+        else
+            tag = "<button type='button' class='btn btn-default btn-xs' onclick='showf(this)' data-original-acc='" + accountID + "'><span class='glyphicon glyphicon-check'></span> Shared</button>";
+        return tag;
+
+    }
+    function showf(me) {
+        ShowFriends($(me).data('original-acc'));
+        var firsttime = true;
+        if (firsttime)
+        {
+            $('#dlgFriends').on('hidden.bs.modal', function (e) {
+                jQuery("#lstAccount").jqGrid().trigger("reloadGrid");
+            });
+            firsttime = false;
+        }
        
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.InitialAmount)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.CurrentAmount)
-        </th>
-        <th></th>
-    </tr>
+    }
+    function BulletFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        var bl = "";
 
-@foreach (var item in Model) {
-    <tr>
-        
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.InitialAmount)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CurrentAmount)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AccountID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AccountID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AccountID })
-        </td>
-    </tr>
-}
+        if (cellvalue && cellvalue.length > 0) {
+            var mySplitResult = cellvalue.split(",");
+            bl = "<ul>";
+            for (i = 0; i < mySplitResult.length; i++) {
+                bl += "<li>" + mySplitResult[i] + "</li>";
+            }
 
-</table>
+            bl += "</ul>";
+        }
+
+        return bl;
+    }
+    
+</script>
+@Html.Partial("ShareResource", Pocket.Common.SharedResourceType.Account.GetHashCode())

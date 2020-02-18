@@ -1,0 +1,18 @@
+{{#.}}
+<li class="swipeout vendor-swipeout-{{VendorID}}" id="{{VendorID}}">
+    <a href="Pages/Vendor.html?id={{VendorID}}" class="swipeout-content item-content item-link">
+        <div class="item-media"><i class="icon ion-ios-location color-form-icon"></i></div>
+        <div class="item-inner">
+            <div class="item-title-row">
+                <div class="item-title">{{Name}}</div>
+                
+            </div>
+            
+        </div>
+    </a>
+    <div class="swipeout-actions-right">
+        <a href="#" class="vendor-delete bg-red" data-id="{{VendorID}}">Delete</a>
+        <!--<a href="#" class="vendor-edit-link bg-blue swipeout-overswipe" data-id="{{VendorID}}" data-url="Pages/Vendor.html?id={{VendorID}}">Edit</a>-->
+    </div>
+</li>
+{{/.}}

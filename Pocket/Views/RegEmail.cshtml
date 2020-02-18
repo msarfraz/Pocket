@@ -1,0 +1,15 @@
+﻿@model Pocket.ViewModels.EmailMessage
+@{
+    Layout = null;
+}
+
+To: @Model.To
+
+Subject: @Model.Subject
+
+Hello,
+
+Please click <a href="@Model.CallbackURL">here</a> to confirm your email address.
+
+Thanks!
+

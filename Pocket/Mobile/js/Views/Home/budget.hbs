@@ -1,0 +1,81 @@
+
+            
+            {{#each model.Categories}}
+            <li class="accordion-item">
+                    <a href="" class="item-link item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">{{Name}} </div>
+                            <div class="item-after">
+                                <progress value="{{Percentage}}" max="100"></progress>
+                                <span class="progresslabel">
+                                   <span class="color-red">{{Amount}}   </span> <span class="color-black">&nbsp;/&nbsp;</span> <span class="color-blue">{{Budget}}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </a> 
+                <div class="accordion-item-content">
+                   
+                    <div class="content-block">
+                        <ul>
+                            {{#each Subcategories}}
+                            <li>
+                                <a href="Pages/ReportList.html?name=advancereport&catid={{../CategoryID}}&subcatid={{SubcategoryID}}&currmonth=true" class="item-link item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title label">{{Name}} </div>
+                                        <div class="item-after">
+                                            <progress value="{{Percentage}}" max="100"> </progress>
+                                            <span class="progresslabel color-red"><span class="color-red">{{Amount}}</span> <span class="color-black">&nbsp;/&nbsp;</span>  <span class="color-blue">{{Budget}}</span></span> 
+                                        </div>
+                                    </div>
+                                </a>
+</li>
+                            {{/each}}
+                            
+                        </ul>
+                    </div>
+                    
+                </div>
+            </li>
+            {{/each}}
+         {{#js_compare "this.model.AllEvents.Events.length > 0"}}
+   <li class="accordion-item">
+                <a href="" class="item-link item-content">
+                    <div class="item-inner">
+                        <div class="item-title label">{{model.AllEvents.Name}} </div>
+                        <div class="item-after">
+                            <progress value="{{model.AllEvents.Percentage}}" max="100">  </progress>
+                            <span class="progresslabel">
+                              <span class="color-red"> {{model.AllEvents.Amount}} </span>  <span class="color-black">&nbsp;/&nbsp;</span> <span class="color-blue">{{model.AllEvents.Budget}}</span>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <div class="accordion-item-content">
+
+                    <div class="content-block">
+                        <ul>
+                            {{#each model.AllEvents.Events}}
+                            <li>
+                                <a href="Pages/ReportList.html?name=eventreport&eventid={{EventID}}" class="item-link item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title label">{{Name}} </div>
+                                        <div class="item-after">
+                                            <progress value="{{Percentage}}" max="100">
+                                            </progress>
+                                            <span class="progresslabel">
+                                             <span class="color-red">{{Amount}} </span>    <span class="color-black">&nbsp;/&nbsp;</span> <span class="color-blue">{{Budget}}</span>
+                                            </span>
+                                          </div>
+                                    </div>
+                                    </a>
+</li>
+                            {{/each}}
+
+                        </ul>
+                    </div>
+
+                </div>
+            </li>
+{{/js_compare}}
+       
+

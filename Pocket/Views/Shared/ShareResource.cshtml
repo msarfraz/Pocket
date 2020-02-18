@@ -1,0 +1,79 @@
+﻿@model int
+
+
+<link href="~/Content/bootstrap-switch.min.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap-switch.min.js"></script>
+<div id="dlgFriends" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Friends</h4>
+            </div>
+            <div class="modal-body">
+                <table id="lstFriends"></table>
+                <div id="pgrFriends"></div>
+                <input id="hdnResourceID" type="hidden" />
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var resType = '@Model';
+    var fcolNames = ['FriendID', 'Name', 'Shared'];
+    var fcolModel = [
+        { name: 'FriendID', index: 'FriendID', width: 55, key: true, hidden: true },
+        { name: 'FriendName', index: 'FriendName', width: 250, editable: false },
+        { name: 'Shared', formatter: ButtonFormatter, editable: false }
+    ];
+    var firsttime = true;
+
+    function ButtonFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        var friendID = rowObject[0];
+        var tag;
+        if (cellvalue  == "False")
+            tag = "<input name='chkResource' type='checkbox' data-size='mini' data-on-color='primary' data-off-color='default' data-original-fr='" + friendID + "' \" />";
+        else
+            tag = "<input name='chkResource' type='checkbox' data-size='mini' checked  data-on-color='primary' data-off-color='default' data-original-fr='" + friendID + "' />";
+        return tag;
+    }
+    function shareResource(friendID, shared) {
+        var resId = $("#hdnResourceID").val();
+        PostData("/friend/ShareResource", { ResourceType: resType, ResourceID: resId, FriendID: friendID, Shared: shared }, function (data) {
+            $("#lstFriends").jqGrid().trigger('reloadGrid');
+        });
+
+    }
+
+        function ShowFriends(resourceID) {
+            $("#hdnResourceID").val(resourceID);
+
+            if (firsttime) {
+                $("#dlgFriends").modal('show');
+
+                var fPostData = {};
+                fPostData["ResourceID"] = function () { return $("#hdnResourceID").val() };
+                fPostData["ResourceType"] = resType;
+
+                createJQGrid('/friend/JResourceFriends', fcolNames, fcolModel, 'FriendID', "", "Friends", "#lstFriends", '#pgrFriends', fPostData, { sidx: 'FriendName', addgrid: false, editgrid: false, loadComplete: loadResourceCompleteFunc });
+                firsttime = false;
+            }
+            else
+            jQuery("#lstFriends").jqGrid().trigger("reloadGrid");
+
+            $("#dlgFriends").modal('show');
+            
+        }
+        function loadResourceCompleteFunc() {
+           // $("[type='checkbox']").bootstrapSwitch();
+            $('input[name=chkResource]').each(function () {
+                $(this).bootstrapSwitch();
+            });
+            $('input[name=chkResource]').each(function () {
+                $(this).on('switchChange.bootstrapSwitch', function (e, data) {
+                        shareResource( $(this).data('original-fr'), data);
+                });
+            });
+        }
+</script>

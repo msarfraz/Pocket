@@ -13,17 +13,17 @@ namespace Pocket.Models
     {
         [Required()]
         [Key, Column("friend_id", Order = 1)]
-        public int FriendID { get; set; }
+        public string FriendID { get; set; }
 
         [Required()]
         [Key, Column("user_id", Order = 0)]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
         
         public FriendStatus Status { get; set; }
 
         
-        //public virtual User User { get; set; }
-        public virtual User UserFriend { get; set; }
+        //public virtual ApplicationUser User { get; set; }
+        public virtual ApplicationUser UserFriend { get; set; }
         //public virtual ICollection<User> UserFriends { get; set; }
         //public virtual List<Event> Events { get; set; }
 

@@ -8,170 +8,94 @@ using System.Web;
 using System.Web.Mvc;
 using Pocket.Common;
 using Pocket.Models;
+using Pocket.Extensions;
 
 namespace Pocket.Controllers
 {
+    [Authorize]
     public class PayeeController : Controller
     {
         private QDbContext db = new QDbContext();
 
-        // GET: /Payee/
+        // GET: /Payee/Index
         public ActionResult Index()
         {
             var payees = db.Users.Find(State.UserID).Payees;
             return View(payees.ToList());
         }
-        // GET: /Payee/List
-        public ActionResult List()
-        {
-            var payees = db.Users.Find(State.UserID).Payees;
-            return View(payees.ToList());
-        }
-        
-        // GET: /Payee/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Payee payee = db.Payees.Find(id);
-            if (payee == null)
-            {
-                return HttpNotFound();
-            }
-            return View(payee);
-        }
-
-        // GET: /Payee/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: /Payee/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        public JsonResult MEdit([Bind(Include = "PayeeID,Name")] int PayeeID, string Name)
+        {
+            return Edit<JsonResult>(PayeeID, Name);
+        }
+
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include="PayeeID,Name")] Payee payee)
+        [HttpPost]
+        public JsonResult JEdit([Bind(Include = "PayeeID,Name")] int PayeeID, string Name)
+        {
+            return Edit<JsonResult>(PayeeID, Name);
+        }
+       
+        private T Edit<T>([Bind(Include = "PayeeID,Name")] int PayeeID, string Name) where T:JsonResult
         {
             if (ModelState.IsValid)
             {
-                payee.UserID = State.UserID;
-                db.Payees.Add(payee);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID", payee.UserID);
-            return View(payee);
-        }
-
-        // GET: /Payee/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Payee payee = db.Payees.Find(id);
-            if (payee == null)
-            {
-                return HttpNotFound();
-            }
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID", payee.UserID);
-            return View(payee);
-        }
-
-        // POST: /Payee/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include="PayeeID,UserID,Name")] Payee payee)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(payee).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID", payee.UserID);
-            return View(payee);
-        }
-
-        // GET: /Payee/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Payee payee = db.Payees.Find(id);
-            if (payee == null)
-            {
-                return HttpNotFound();
-            }
-            return View(payee);
-        }
-
-        // POST: /Payee/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            Payee payee = db.Payees.Find(id);
-            db.Payees.Remove(payee);
-            db.SaveChanges();
-            return RedirectToAction("Index");
-        }
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public JsonResult JEdit([Bind(Include = "PayeeID,Name")] Payee payee)
-        {
-            if (Request.IsAjaxRequest() && ModelState.IsValid)
-            {
-                payee.UserID = State.UserID;
-                if (payee.PayeeID == 0) //add
+                Payee payee = db.Payees.Where(p => p.PayeeID == PayeeID && p.UserID == State.UserID).FirstOrDefault();
+                if (payee == null) //add
                 {
+                    payee = new Payee();
+                payee.UserID = State.UserID;
+                payee.Name = Name;
                     db.Payees.Add(payee);
                 }
                 else
                 {
+                    payee.Name = Name;
                     db.Entry(payee).State = EntityState.Modified;
                 }
                 db.SaveChanges();
-                return Json(new {
-                success = true,
-                message = "success",
-                new_id = payee.PayeeID
-                });
+                return Repository.Success<T>(payee.PayeeID);
+                
             }
-            //ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID", payee.UserID);
-            return Json(payee);
+            return Repository.Failure<T>();
         }
-        // GET: /Payee/
+        
+        public JsonResult MList()
+        {
+            return GetList("Name", "asc", 1, 100, ResultType.Mobile);
+        }
         public JsonResult JIndex(string sidx, string sord, int page, int rows)
         {
-            if (Request.IsAjaxRequest())
-            {
+            return GetList(sidx, sord, page, rows, ResultType.Web);
+        }
+        private JsonResult GetList(string sidx, string sord, int page, int rows, ResultType rt)
+        {
                 var payees = db.Users.Find(State.UserID).Payees;
 
-                return Util.CreateJsonResponse<Payee>(sidx, sord, page, rows, payees, (Func<IEnumerable<Payee>, Array>)delegate(IEnumerable<Payee> rd)
+                return Util.CreateJsonResponse<Payee>(sidx, sord, page, rows, payees, rt, (Func<IEnumerable<Payee>, Array>)delegate(IEnumerable<Payee> rd)
                 {
-                    return (
-                        from question in rd
+                    if (rt == ResultType.Web)
+                    {
+                        return (
+                        from p in rd
                         select new
                         {
-                            PayeeID = question.PayeeID,
-                            cell = new string[] { question.PayeeID.ToString(), question.Name.ToString() }
+                            PayeeID = p.PayeeID,
+                            cell = new string[] { p.PayeeID.ToString(), p.Name.ToString() }
                         }).ToArray();
+                    }
+                    else
+                    {
+                        return (
+                        from p in rd
+                        select new
+                        {
+                            PayeeID = p.PayeeID,
+                            Name = p.Name
+                        }).ToArray();
+                    }
                 }
                     );
-            }
-            else
-                return Json(new HttpStatusCodeResult(HttpStatusCode.BadRequest));
            
         }
 
@@ -191,7 +115,37 @@ namespace Pocket.Controllers
             selectStr = "<select>" + selectStr + "</select>";
             return selectStr;
         }
+        [HttpPost]
+        public JsonResult MDelete(int PayeeID)
+        {
+            return Delete<JsonResult>(PayeeID);
+        }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public JsonResult JDelete(int PayeeID)
+        {
+            return Delete<JsonResult>(PayeeID);
+        }
+
+        private T Delete<T>(int PayeeID) where T : JsonResult
+        {
+                try
+                {
+Payee payee = db.Payees.Where(p => p.UserID == State.UserID && p.PayeeID == PayeeID).FirstOrDefault();
+                if (payee != null)
+                {
+                    db.Payees.Remove(payee);
+                    db.SaveChanges();
+                    return Repository.Success<T>(payee.PayeeID);
+                }
+                }
+                catch (Exception)
+                {
+                    
+                }
+                return Repository.DelFailure<T>();
+        }
         protected override void Dispose(bool disposing)
         {
             if (disposing)

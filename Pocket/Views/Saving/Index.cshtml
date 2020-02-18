@@ -1,0 +1,33 @@
+﻿@model int?
+@{
+    Layout = null;
+}
+
+<table id="lstSaving"></table>
+<div id="pgrSaving"></div>
+<input type="hidden" id="hdnTargetID" value="@Model"/>
+
+<script type="text/javascript">
+   
+    var savingColNames = ['SavingID', 'Date', 'Account', 'Amount' ];
+    var savingColModel = [
+        { name: 'SavingID', index: 'SavingID', key: true, hidden: true },
+        {
+            name: 'SavingDate', index: 'SavingDate', editable: true, sorttype: "date", datefmt: 'mm/dd/yyyy', editoptions: {
+                dataInit: function (el) {
+                    $(el).datepicker({ dateFormat: 'mm/dd/yy' });
+                },
+
+            },
+            editrules: { required: true, date: true }
+        },
+    { name: 'AccountID', index: 'AccountID',  editable: true, edittype: 'select', editrules: { required: true, select: true }, editoptions: { dataUrl: '/qaccount/jAccounts' } },
+        { name: 'Amount', index: 'Amount', editable: true, editrules: { required: true, number: true } }
+
+    ];
+    var sPostData = {};
+    sPostData["TargetID"] = function () { return $("#hdnTargetID").val() };
+
+    createJQGrid('/saving/jlist', savingColNames, savingColModel, 'SavingID', "/saving/jedit", "Savings", "#lstSaving", '#pgrSaving', sPostData, { sidx: 'SavingDate', sord: 'asc', delgrid: true, delurl: '/saving/jdelete', footerrow: true, editExtraParams: { TargetID: $("#hdnTargetID").val() } });
+
+ </script>

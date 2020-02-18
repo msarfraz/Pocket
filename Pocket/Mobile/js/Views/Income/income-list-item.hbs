@@ -1,0 +1,18 @@
+{{#.}}
+	<li class="swipeout income-swipeout-{{IncomeID}}" id="{{IncomeID}}">
+        <a href="Pages/Income.html?id={{IncomeID}}" class="swipeout-content item-link item-content">
+            <div class="item-media "><span class="badge bg-blue"> <i class="icon ion-social-usd color-white"></i></span></div>
+            <div class="item-inner">
+                <div class="item-title-row">
+                    <div class="item-title">{{#to_date IncomeDate}}{{/to_date}}</div>
+                    <div class="item-after"><span class="color-form-icon"> {{Amount}}</span> </div>
+                </div>
+                <div class="item-subtitle">{{SourceText}} <i class="icon ion-arrow-right-a"></i> {{AccountText}}</div>
+            </div>
+        </a>
+        <div class="swipeout-actions-right">
+            <a href="#" class="income-delete-link bg-red" data-id="{{IncomeID}}">Delete</a>
+        </div>
+</li>
+
+{{/.}}

@@ -18,8 +18,8 @@ namespace Pocket.Models
         [Display(Name = "Comments", Description = "Comment By")]
         [Required()]
         [Column("user_id")]
-        public int UserID { get; set; }
-        public virtual User User { get; set; }
+        public string UserID { get; set; }
+        public virtual ApplicationUser User { get; set; }
 
         [Required()]
         [Column("expense_id")]

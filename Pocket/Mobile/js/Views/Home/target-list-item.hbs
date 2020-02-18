@@ -1,0 +1,21 @@
+{{#.}}
+	<li>
+        <a href="Pages/Target.html?id={{TargetID}}" class="item-link item-content">
+            {{#js_compare "this.SavingAmount >= this.TargetAmount"}}
+<div class="item-media"><span class="badge bg-lightblue"><i class="icon ion-disc"></i> </span></div>
+{{else}}
+<div class="item-media"><span class="badge bg-red "><i class="icon ion-disc"></i> </span></div>
+{{/js_compare}}
+            <div class="item-inner">
+                <div class="item-title-row">
+                    <div class="item-title">{{Name}}</div>
+                    <div class="item-after">
+                        <span class="color-red">{{TargetAmount}}</span>
+                        <span class="color-black">&nbsp;/&nbsp;</span>
+                        <span class="color-blue">{{SavingAmount}}</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+</li>
+{{/.}}

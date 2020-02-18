@@ -19,8 +19,11 @@ namespace Pocket.Models
 
         [Required()]
         [Column("user_id")]
-        public int UserID { get; set; }
-        public virtual User User { get; set; }
+        public string UserID { get; set; }
+        public virtual ApplicationUser User { get; set; }
+
+        [Column("schedule_name")]
+        public string Name { get; set; }
 
         [Required()]
         [Column("last_run")]

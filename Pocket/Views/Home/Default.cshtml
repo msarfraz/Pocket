@@ -1,0 +1,165 @@
+﻿@model IEnumerable<Pocket.Models.Account>
+@{
+    ViewBag.Title = Pocket.Common.Global.ApplicationName;
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/Highcharts-4.1.5/js/highcharts.js"></script>
+
+<div id="homechart">
+
+</div>
+<script type="text/javascript">
+    function LoadChart() {
+
+        PostData("/Chart/JHomeChartData", { }, function (response) {
+            var d = response.rows;
+
+            $('#homechart').highcharts({
+                title: {
+                    text: 'Monthly Budget and Expense',
+                    x: -20 //center
+                },
+                subtitle: {
+                    text: 'Summary view',
+                    x: -20
+                },
+                xAxis: {
+                    categories: d.categories
+                },
+                yAxis: {
+                    title: {
+                        text: 'Days in month'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+
+
+                series: d.series
+            });
+
+
+        });
+
+    }
+    LoadChart();
+</script>
+
+<p>
+        @{
+    var db = new Pocket.Models.QDbContext();
+    var budget = Pocket.Common.Global.getMonthBudget(db, DateTime.Today.Month, DateTime.Today.Year, false);
+
+    var expense = Pocket.Common.Global.getMonthExpense(db, DateTime.Today.Month, DateTime.Today.Year);
+    var diff = budget - expense;
+    int perc = (int)((diff / (budget==0?1:budget)) * 100);
+    string ptype = "";
+
+        if (perc <= 20){
+            ptype = "progress-bar-danger";}
+        else if(perc <= 40){
+            ptype = "progress-bar-warning";}
+        else if(perc <= 60){
+            ptype = "progress-bar-info";}
+        else if (perc <= 80) {
+            ptype = "progress-bar-success";}
+
+        var totalAccountSum = Model.Select(a => a.CurrentAmount).DefaultIfEmpty(0).Sum();
+    if(totalAccountSum < 0)
+    {
+        totalAccountSum = 0;
+    }
+        var accountnum = 1;
+    }
+    <a href="Budget">
+
+    Monthly Budget: @Math.Round(budget, 2)
+    </a>
+    <div class="progress">
+        <div class="progress-bar @ptype progress-bar-striped" role="progressbar" aria-valuenow="@perc.ToString()" aria-valuemin="0" aria-valuemax="100" style="width: @perc%">
+        Remaining Budget: @Math.Round(diff, 2)
+        </div>
+    </div>
+    Totoal Money in Accounts: @totalAccountSum.ToString()
+        <div class="progress">
+@foreach (var item in Model)
+{
+
+    if (accountnum % 4 == 0)
+    {
+        ptype = "progress-bar-danger";
+    }
+    else if (accountnum % 4 == 1)
+    {
+        ptype = "progress-bar-warning";
+    }
+    else if (accountnum % 4 == 2)
+    {
+        ptype = "progress-bar-info";
+    }
+    else if (accountnum % 4 == 3)
+    {
+        ptype = "progress-bar-success";
+    }
+    
+    perc = (int)Math.Ceiling(((@item.CurrentAmount * 80) / totalAccountSum));
+
+    <div class="progress-bar @ptype mypopover" style="width: @perc.ToString()%" data-placement="top" data-toggle="popover" data-original-title="@item.Name" data-content="@item.CurrentAmount.ToString()">
+        
+    </div>
+    accountnum++;
+
+}
+           
+            
+</div>
+
+</p>
+
+<table id="lstNotifications"></table>
+<div id="pgrNotification"></div>
+
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    $('.mypopover').popover({ trigger: 'hover', 'placement': 'top' });
+
+    var colNames = ['NotificationID','Date', 'Notification', 'URL', 'Status'];
+    var colModel = [
+        { name: 'NotificationID', index: 'NotificationID', width: 55, key: true, hidden: true },
+        { name: 'NotificationDate', index: 'NotificationDate', width: 100, editable: false},
+        { name: 'Text', index: 'Text',width:400, editable: false, formatter: LinkFormatter },
+        { name: 'URL', index: 'URL', hidden: true },
+        { name: 'Status', index: 'Status', hidden: true }
+    ];
+    createJQGrid('/Notification/jlist', colNames, colModel, 'NotificationID', "", "Notifications", "#lstNotifications", '#pgrNotification', {}, { addgrid: false, editgrid: false, sidx: 'NotificationID', sord: "desc" });
+
+    
+    function LinkFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+
+        if (cellvalue && cellvalue.length > 0) {
+            var cval = cellvalue;
+            var tag = "<a href='" + rowObject[3] + "' onclick='markread(" + rowObject[0] + ")'>" + cval + "</a>";
+            if (rowObject[4] == 1)
+                tag = tag + "<a href='#' onclick='markread(" + rowObject[0] + ")'>" + "<span class='label label-warning pull-right'>Mark Read</span>" + "</a>";
+
+            return tag;
+        }
+        else
+            return cellvalue;
+    }
+    function markread(notifid) {
+        PostData("/Notification/markread", { NotificationID: notifid }, function (data) {
+            $("#lstNotifications").jqGrid().trigger('reloadGrid');
+        });
+    }
+</script>

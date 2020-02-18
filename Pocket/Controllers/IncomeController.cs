@@ -8,117 +8,17 @@ using System.Web;
 using System.Web.Mvc;
 using Pocket.Common;
 using Pocket.Models;
+using System.Data.Entity.Validation;
+using Pocket.Extensions;
 
 namespace Pocket.Controllers
 {
+    [Authorize]
     public class IncomeController : Controller
     {
         private QDbContext db = new QDbContext();
 
-        // GET: /Income/
-        public ActionResult Index()
-        {
-            return View(db.Income.ToList());
-        }
-
-        // GET: /Income/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Income income = db.Income.Find(id);
-            if (income == null)
-            {
-                return HttpNotFound();
-            }
-            return View(income);
-        }
-
-        // GET: /Income/Create
-        public ActionResult Create()
-        {
-            ViewBag.AccountID = new SelectList(db.Users.Find(State.UserID).Accounts, "AccountID", "Name");
-            ViewBag.SourceID = new SelectList(db.Users.Find(State.UserID).IncomeSources, "SourceID", "Name");
-            return View();
-        }
-
-        // POST: /Income/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include="IncomeID,AccountID,SourceID,Amount,IncomeDate")] Income income)
-        {
-            if (ModelState.IsValid)
-            {
-                income.UserID = State.UserID;
-                db.Income.Add(income);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            return View(income);
-        }
-
-        // GET: /Income/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Income income = db.Income.Find(id);
-            if (income == null)
-            {
-                return HttpNotFound();
-            }
-            return View(income);
-        }
-
-        // POST: /Income/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include="IncomeID,UserID,AccountID,SourceID,Amount,IncomeDate")] Income income)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(income).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(income);
-        }
-
-        // GET: /Income/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Income income = db.Income.Find(id);
-            if (income == null)
-            {
-                return HttpNotFound();
-            }
-            return View(income);
-        }
-
-        // POST: /Income/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            Income income = db.Income.Find(id);
-            db.Income.Remove(income);
-            db.SaveChanges();
-            return RedirectToAction("Index");
-        }
-
+        
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -128,66 +28,131 @@ namespace Pocket.Controllers
             base.Dispose(disposing);
         }
 
-        // GET: /Payee/List
-        public ActionResult List()
+        // GET: /Payee/Index
+        public ActionResult Index()
         {
             return View(db.Users.Find(State.UserID).Income);
         }
-        // GET: /Payee/
-        public JsonResult JList(string sidx, string sord, int page, int rows)
+        public JsonResult MRecord(int IncomeID)
         {
-            if (Request.IsAjaxRequest())
-            {
-                DateTime IncomeFrom = Util.ToDateTime(Request.Params["IncomeFrom"], new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
-                DateTime IncomeTo = Util.ToDateTime(Request.Params["IncomeTo"], new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
+            
 
+                var incomes = db.Income.Where(inc => inc.UserID == State.UserID && inc.IncomeID == IncomeID).ToList();
+                return Util.Package<JsonResult>(incomes.Select(inc => new
+                {
+                    IncomeID = inc.IncomeID,
+                    IncomeDate = inc.IncomeDate.ToUTCDateString(),
+                    AccountID = inc.AccountID,
+                    AccountText = inc.Account.Name,
+                    Amount = inc.Amount,
+                    Description = inc.Description,
+                    SourceID = inc.SourceID,
+                    SourceText = inc.IncomeSource.Name,
+                    Repeat = inc.Repeat.GetHashCode(),
+                    RepeatText = inc.Repeat.String()
+                }));
+
+        }
+        public JsonResult MList(int page, int rows, DateTime? IncomeFrom, DateTime? IncomeTo)
+        {
+            return (JsonResult)GetList("IncomeDate", "desc", page, rows, IncomeFrom.HasValue?IncomeFrom.Value:DateTime.Today.MonthFirstDate(), IncomeTo.HasValue?IncomeTo.Value:DateTime.Now.MonthLastDate(), ResultType.Mobile);
+        }
+       public JsonResult JList(string sidx, string sord, int page, int rows)
+        {
+            DateTime IncomeFrom = Util.ToDateTime(Request.Params["IncomeFrom"], new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
+            DateTime IncomeTo = Util.ToDateTime(Request.Params["IncomeTo"], new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
+
+            return GetList(sidx, sord, page, rows, IncomeFrom, IncomeTo, ResultType.Web);
+        }
+        private JsonResult GetList(string sidx, string sord, int page, int rows, DateTime IncomeFrom, DateTime IncomeTo, ResultType rt)
+        {
+                
                 var incomes = db.Users.Find(State.UserID).Income.Where(inc => inc.IncomeDate >= IncomeFrom && inc.IncomeDate <= IncomeTo).ToList();
 
-                return Util.CreateJsonResponse<Income>(sidx, sord, page, rows, incomes, (Func<IEnumerable<Income>, Array>)delegate(IEnumerable<Income> rd)
+                return Util.CreateJsonResponse<Income>(sidx, sord, page, rows, incomes,rt, (Func<IEnumerable<Income>, Array>)delegate(IEnumerable<Income> rd)
                 {
-                    return (
+                    if (rt == ResultType.Web)
+	{
+                         return (
                         from income in rd
                         select new
                         {
                             IncomeID = income.IncomeID,
-                            cell = new string[] { income.IncomeID.ToString(), income.IncomeDate.ToShortDateString(), income.IncomeSource.Name.ToString(), income.Account.Name, income.Amount.ToString(), income.Description, Util.EnumToString<RepeatPattern>(income.Repeat) }
+                            cell = new string[] { income.IncomeID.ToString(), income.IncomeDate.ToDateString(), income.IncomeSource.Name.ToString(), income.Account.Name, income.Amount.ToString(), income.Description, Util.EnumToString<RepeatPattern>(income.Repeat) }
                         }).ToArray();
+	}
+                   else
+	{
+                         return (
+                        from inc in rd
+                        select new { 
+                IncomeID = inc.IncomeID,
+                IncomeDate = inc.IncomeDate.ToDateDisplayString(),
+                AccountID = inc.AccountID,
+                AccountText = inc.Account.Name,
+                Amount = inc.Amount,
+                Description = inc.Description,
+                SourceID = inc.SourceID,
+                SourceText = inc.IncomeSource.Name,
+                Repeat = inc.Repeat.GetHashCode(),
+                RepeatText = inc.Repeat.String()
+                }).ToArray();
+	}
                 }
                     );
-            }
-            else
-                return Json(new HttpStatusCodeResult(HttpStatusCode.BadRequest));
 
+        }
+        [HttpPost]
+        public JsonResult MEdit([Bind(Include = "IncomeID,AccountID,SourceID,Amount,IncomeDate,Description,Repeat")] int IncomeID, int AccountID, int SourceID,
+                                                                            double Amount, DateTime IncomeDate, string Description, int Repeat)
+        {
+            return Edit<JsonResult>(IncomeID, AccountID, SourceID, Amount, IncomeDate, Description, Repeat);
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public JsonResult JEdit([Bind(Include = "IncomeID,AccountID,SourceID,Amount,IncomeDate,Description,Repeat")] Income income)
+        public JsonResult JEdit([Bind(Include = "IncomeID,AccountID,SourceID,Amount,IncomeDate,Description,Repeat")] int IncomeID, int AccountID, int SourceID,
+                                                                            double Amount, DateTime IncomeDate, string Description, int Repeat)
         {
-            if (Request.IsAjaxRequest() && ModelState.IsValid)
+            return Edit<JsonResult>(IncomeID, AccountID, SourceID, Amount, IncomeDate, Description, Repeat);
+        }
+
+        private T Edit<T>([Bind(Include = "IncomeID,AccountID,SourceID,Amount,IncomeDate,Description,Repeat")] int IncomeID, int AccountID, int SourceID,
+                                                                            double Amount, DateTime IncomeDate, string Description, int Repeat)where T:JsonResult
+        {
+            if (ModelState.IsValid)
             {
-                if(!ValidateIncome(income))
-                    return Json(HttpStatusCode.BadRequest);
-                income.UserID = State.UserID;
-                if (income.IncomeID == 0) //add
-                {
-                    db.Income.Add(income);
-                }
+                bool add = false;
+                Income income = null;
+                if(IncomeID > 0)
+                 income = db.Income.Where(inc => inc.UserID == State.UserID && inc.IncomeID == IncomeID).FirstOrDefault();
                 else
                 {
-                    Income inc = db.Income.Find(income.IncomeID);
-                    inc.IncomeID = income.IncomeID;
-                    inc.AccountID = income.AccountID;
-                    inc.SourceID = income.SourceID;
-                    inc.Amount = income.Amount;
-                    inc.IncomeDate = income.IncomeDate;
-                    inc.Description = income.Description;
-                    inc.Repeat = income.Repeat;
-                    db.Entry(inc).State = EntityState.Modified;
+                    income = new Income();
+                    income.UserID = State.UserID;
+                    add = true;
                 }
-                db.SaveChanges();
-                
-                income = db.Income.Find(income.IncomeID);
+                if (income == null)
+                    return Global.BadRequest<T>();
+
+                    income.AccountID = AccountID;
+                    income.SourceID = SourceID;
+                    income.Amount = Amount;
+                    income.IncomeDate = IncomeDate;
+                    income.Description = Description;
+                    income.Repeat = (RepeatPattern)Repeat;
+                    
+               
+                    
+                if (ValidateIncome(income))
+                {
+                    if (add)
+                        db.Income.Add(income);
+                    else
+                        db.Entry(income).State = EntityState.Modified;
+                }
+                else
+                    return Global.BadRequest<T>();
 
                 if (income.Repeat == RepeatPattern.None) // remove any existing scheduler, if any
                 {
@@ -195,8 +160,6 @@ namespace Pocket.Controllers
                     if (schedule != null)
                     {
                         db.Schedules.Remove(schedule);
-                        income.ScheduleID = null;
-                        db.SaveChanges();
                     }
 
                 }
@@ -208,47 +171,84 @@ namespace Pocket.Controllers
                         schedule = new Schedule
                         {
                             UserID = income.UserID,
+                            Name = income.Description,
                             Type = ScheduleType.Income,
                             Status = ScheduleStatus.Pending,
                             CreateDate = DateTime.Now,
-                            LastRunDate = DateTime.Now,
-                            NextRunDate = Util.GetNextRunDate(income.Repeat, DateTime.Now)
+                            LastRunDate = DateTime.Today,
+                            NextRunDate = Util.GetNextRunDate(income.Repeat, DateTime.Today)
                         };
-                        db.Schedules.Add(schedule);
-                        db.SaveChanges();
-                        income.ScheduleID = schedule.ScheduleID;
-                        db.Entry(income).State = EntityState.Modified;
+                        income.Schedule = schedule;
                     }
                     else
                     {
-                        schedule.LastRunDate = DateTime.Now;
-                        schedule.NextRunDate = Util.GetNextRunDate(income.Repeat, DateTime.Now);
+                        schedule.LastRunDate = DateTime.Today;
+                        schedule.NextRunDate = Util.GetNextRunDate(income.Repeat, DateTime.Today);
                         db.Entry(schedule).State = EntityState.Modified;
                     }
+                    
+                    
+                }
+                try
+                {
                     db.SaveChanges();
                 }
-                return Json(new
+                catch (DbEntityValidationException e)
                 {
-                    success = true,
-                    message = "success",
-                    new_id = income.IncomeID
-                });
+                    foreach (var eve in e.EntityValidationErrors)
+                    {
+                        Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
+                            eve.Entry.Entity.GetType().Name, eve.Entry.State);
+                        foreach (var ve in eve.ValidationErrors)
+                        {
+                            Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
+                                ve.PropertyName, ve.ErrorMessage);
+                        }
+                    }
+                    throw;
+                }
+                return Repository.Success<T>(income.IncomeID);
             }
-            return Json(new
-            {
-                success = false,
-                message = "Model state is invalid.",
-                new_id = 0
-            });
+            return Repository.Failure<T>();
+        }
+        [HttpPost]
+        public JsonResult MDelete(int IncomeID)
+        {
+            return Delete<JsonResult>(IncomeID);
         }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public JsonResult JDelete(int IncomeID)
+        {
+            return Delete<JsonResult>(IncomeID);
+        }
+
+        private T Delete<T>(int IncomeID) where T : JsonResult
+        {
+                try
+                {
+                    Income income = db.Income.Where(inc => inc.UserID == State.UserID && inc.IncomeID == IncomeID).FirstOrDefault();
+                    if (income != null)
+                    {
+                        db.Income.Remove(income);
+                        db.SaveChanges();
+                        return Repository.Success<T>(income.IncomeID);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+return Repository.DelFailure<T>();
+        }
         private bool ValidateIncome(Income income)
         {
             bool validated = true;
-            User u = db.Users.Find(State.UserID);
+            ApplicationUser u = db.Users.Find(State.UserID);
             if(income.IncomeID != 0)
                 validated = validated && u.Income.Where(inc => inc.IncomeID == income.IncomeID).FirstOrDefault() != null;
-            validated = validated && u.Accounts.Where(acc => acc.AccountID == income.AccountID).FirstOrDefault() != null;
+            validated = validated && Global.geAllUserAccounts(db).Where(acc => acc.AccountID == income.AccountID).FirstOrDefault() != null;
             validated = validated && u.IncomeSources.Where(acc => acc.SourceID == income.SourceID).FirstOrDefault() != null;
             return validated;
         }

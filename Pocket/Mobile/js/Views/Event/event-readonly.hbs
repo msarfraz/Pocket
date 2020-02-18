@@ -1,0 +1,79 @@
+    <div class="list-block">
+
+
+        <ul>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-speakerphone color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Name</div>
+                        <div class="item-after">
+                            {{model.Name}}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-android-alarm-clock color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Date</div>
+                        <div class="item-after">
+                            {{#to_date model.EventDate}}{{/to_date}}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-refresh color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title">Repeat</div>
+                        <div class="item-after">{{model.BudgetDurationText}} </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-social-usd-outline color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Budget</div>
+                        <div class="item-after">
+                            {{model.BudgetAmount}}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-android-checkmark color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title">Include in Budget</div>
+                        <div class="item-after">{{model.BudgetedText}} </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-alert color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title">Status</div>
+                        <div class="item-after">{{model.EventStatusText}} </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="Pages/ReportList.html?name=eventreport&eventid={{model.EventID}}" class="item-link">
+                    <div class="item-content">
+                        <div class="item-media"><span class="badge bg-red"> <i class="icon ion-ios-cart-outline color-white"></i></span> </div>
+                        <div class="item-inner">
+                            <div class="item-title">Expenses</div>
+                            <div class="item-after">
+                                {{model.Amount}}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>

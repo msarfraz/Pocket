@@ -1,0 +1,86 @@
+﻿
+@{
+    ViewBag.Title = "Categories Chart";
+}
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    google.load("visualization", "1.1", { packages: ["orgchart"] });
+    google.setOnLoadCallback(function drawVisualization() {
+        // chart lib loaded
+        LoadChart();
+    });
+
+</script>
+
+
+<br />
+
+<p>
+    <div class="row">
+    <div class="col-xs-4">
+        <div class="input-group">
+            <span class="input-group-addon">Month:</span>
+            <select name="ddlMonth" id="ddlMonth" onchange="LoadChart()" class="form-control">
+                <option value="1" label="January" />
+                <option value="2" label="February" />
+                <option value="3" label="March" />
+                <option value="4" label="April" />
+                <option value="5" label="May" />
+                <option value="6" label="June"/>
+                <option value="7" label="July" />
+                <option value="8" label="August" />
+                <option value="9" label="September" />
+                <option value="10" label="October" />
+                <option value="11" label="November" />
+                <option value="12" label="December" />
+            </select>
+        </div>
+    </div>
+    <div class="col-xs-4">
+        <div class="input-group">
+            <span class="input-group-addon">Year:</span>
+            <select name="ddlYear" id="ddlYear" onchange="LoadChart()" class="form-control">
+                @for (int i = 2001; i < 2020; i++)
+                {
+                    <option value="@i" label="@i" />
+                }
+            </select>
+        </div>
+    </div>
+    </div>
+    @Html.AntiForgeryToken()
+</p>
+
+<div id="chartmoneyflow">
+
+</div>
+
+
+<script>
+    $("#ddlMonth").val('@DateTime.Today.Month');
+    $("#ddlYear").val('@DateTime.Today.Year');
+    
+
+    function LoadChart()
+    {
+
+        PostData("/Chart/JMoneyFlowChartData", { Month: $("#ddlMonth").val(), Year: $("#ddlYear").val() }, function (response) {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Name');
+            data.addColumn('string', 'Manager');
+            data.addColumn('string', 'ToolTip');
+
+            data.addRows(response.rows);
+
+            var chart = new google.visualization.OrgChart(document.getElementById('chartmoneyflow'));
+            chart.draw(data, { allowHtml: true });
+
+        });
+
+    }
+
+</script>
+
+
+

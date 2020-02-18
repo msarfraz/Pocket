@@ -1,0 +1,39 @@
+
+
+<div class="pages">
+	<div data-page="categorylist" class="page categorylist-page" data-pg-controller="category" data-pg-init="initlist">
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left"><a href="#" class="back link">
+    <i class="icon icon-back-white"></i>
+    <span> &lt;</span>
+</a></div>
+        <div class="center sliding categorys-list-header" style="left:22px">Categories</div>
+        <div class="right">
+            <a href="Pages/Category.html" class="link icon-only"><i class="icon icon-plus">+</i></a>
+        </div>
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar searchbar-init" data-search-list=".categorys-list" data-search-in=".item-title" data-found=".searchbar-found" data-not-found=".searchbar-not-found">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content">
+            <!-- This block will be displayed if nothing found -->
+            <div class="content-block searchbar-not-found">
+                <div class="content-block-inner">No Category found</div>
+            </div>
+
+            <div class="list-block media-list categorys-list searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+	</div>
+</div>

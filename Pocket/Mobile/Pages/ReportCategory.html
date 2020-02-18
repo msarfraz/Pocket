@@ -1,0 +1,72 @@
+
+
+<div class="pages">
+    <div data-page="reportcategory" class="page reportcategory-page" data-pg-controller="report" data-pg-init="initcategory">
+        <div class="navbar theme-white">
+    <div class="navbar-inner">
+        <div class="left sliding"><<a href="#" class="back link">
+    <i class="icon icon-back-white"></i>
+    <span> &lt;</span>
+</a></div>
+        <div class="center sliding reportcategory-list-header" style="left:22px">Category Report</div>
+        
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar" data-search-list=".reports-category" data-search-in=".item-title">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content" >
+            <div class="list-block accordion-list report-category-filter">
+                <ul>
+                    <li class="accordion-item">
+                        <a href="#" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-ios-analytics"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">Filter</div>
+                            </div>
+                        </a>
+                        <div class="accordion-item-content">
+                            <div class="content-block report-category-filter-content">
+                                <ul>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="icon ion-ios-calendar-outline"></i></div>
+                                            <div class="item-inner">
+                                                <div class="item-input">
+                                                    <input type="date" class="item-input report-category-from-date" placeholder="From" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="item-content">
+                                            <div class="item-media"><i class="icon ion-ios-calendar-outline"></i></div>
+                                            <div class="item-inner">
+                                                <div class="item-input">
+                                                    <input type="date" class="item-input report-category-to-date" placeholder="To" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="list-block accordion-list reports-category searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+    </div>
+</div>
+

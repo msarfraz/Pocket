@@ -1,49 +1,81 @@
 ﻿@model IEnumerable<Pocket.Models.Event>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Events";
 }
 
-<h2>Index</h2>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
 
-<p>
-    @Html.ActionLink("Create New", "Create") | @Html.ActionLink("Quick View", "List")
-</p>
-<table class="table">
-    <tr>
+<br />
+<table id="lstEvent"></table>
+<div id="pgrEvent"></div>
+<br />
+<table id="lstOtherEvent" ></table>
+<div id="pgrOtherEvent"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['EventID', 'Name', 'Event Date', 'Expected Expense', 'Auto Repeat','Include in Budget', 'Actual Expense', 'Status', 'Shared'];
+    var colModel = [
+        { name: 'EventID', index: 'EventID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: true, editrules: { required: true}, formatter: 'showlink', formatoptions: { baseLinkUrl: '/Report/eventreport/' } },
+         {
+             name: 'EventDate', index: 'EventDate', width: 100, editable: true, sorttype: "date", datefmt: 'mm/dd/yyyy', editoptions: {
+                 dataInit: function (el) {
+                     $(el).datepicker({ dateFormat: 'mm/dd/yy' });
+                 },
 
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.SharedFriends)
-        </th>
-        <th></th>
-    </tr>
+             },
+             editrules: { required: true, date: true }
+         },
+          { name: 'BudgetAmount', index: 'BudgetAmount', width: 100, editable: true, editrules: { required: true, number: true } },
+          { name: 'BudgetDuration', index: 'BudgetDuration', width: 100, editable: true, edittype: 'select', editrules: { required: false, select: true }, editoptions: { dataUrl: '/api/common/RecursionOptions' } },
+          { name: 'Budgeted', index: 'Budgeted', width: 100, editable: true, edittype: 'select', editrules: { required: true, select: true }, editoptions: { dataUrl: '/Event/JYesNoOptions' } },
+          { name: 'Amount', index: 'Amount', width: 100, editable:false },
+          {name:'EventStatus', index: 'EventStatus', editable:false},
+           {name:'Shared', formatter:BulletFormatter, editable:false}
+    ];
+    createJQGrid('/event/jlist', colNames, colModel, 'EventID', "/event/jedit", "Event List", "#lstEvent", '#pgrEvent', null, { sidx: 'EventDate', sord: 'desc', delgrid: true, delurl: '/event/jdelete' });
 
-@foreach (var item in Model) {
-    <tr>
-       
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-         <td>
-             <ul>
-                 @foreach (var fr in item.SharedFriends)
-                 {
+    var colOtherNames = ['EventID', 'Name', 'Event Date', 'Expected Expense', 'Actual Expense', 'Repeat', 'Status','Included in Budget'];
+    var colOtherModel = [
+        { name: 'EventID', index: 'EventID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', formatter: 'showlink', formatoptions: { baseLinkUrl: '/Report/eventreport/' } },
+         {name: 'EventDate', index: 'EventDate', width: 100, sorttype: "date", datefmt: 'mm/dd/yyyy' },
+          { name: 'BudgetAmount', index: 'BudgetAmount', width: 100 },
+          { name: 'Amount', index: 'Amount', width: 100 },
+          { name: 'Recursive', index: 'Recursive', width: 100},
+          { name: 'EventStatus', index: 'EventStatus', editable: false },
+          { name: 'Budgeted', index: 'Budgeted', editable: false }
+    ];
+    createJQGrid('/event/jotherlist', colOtherNames, colOtherModel, 'EventID', "", "Other Events", "#lstOtherEvent", '#pgrOtherEvent', null, { sidx: 'EventDate', sord: 'desc', addgrid: false, editgrid: false });
 
-                     <li>
-                         @fr.User.FirstName @fr.User.LastName
-                     </li>
-                 }
-             </ul>   </td>
-        <td>
-            @Html.ActionLink("Share", "Share", new { id = item.EventID }) |
-            @Html.ActionLink("Edit", "Edit", new { id=item.EventID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.EventID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.EventID })
-        </td>
-    </tr>
-}
+    function BulletFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        var eventID = rowObject[0];
 
-</table>
+        var tag;
+        if (cellvalue == "False")
+            tag = "<button type='button' class='btn btn-info btn-xs' onclick='showf(this)' data-original-ev='" + eventID + "'><span class='glyphicon glyphicon-unchecked'></span> Shared</button>";
+        else
+            tag = "<button type='button' class='btn btn-info btn-xs' onclick='showf(this)' data-original-ev='" + eventID + "'><span class='glyphicon glyphicon-check'></span> Shared</button>";
+        return tag;
+    }
+    function showf(me)
+    {
+        ShowFriends($(me).data('original-ev'));
+        var firsttime = true;
+        if (firsttime) {
+            $('#dlgFriends').on('hidden.bs.modal', function (e) {
+                jQuery("#lstEvent").jqGrid().trigger("reloadGrid");
+            });
+            firsttime = false;
+        }
+    }
+    
+    </script>
+@Html.Partial("ShareResource", Pocket.Common.SharedResourceType.Event.GetHashCode() )

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Pocket.Common;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -16,9 +17,9 @@ namespace Pocket.Models
         [Required()]
         [Column("user_id")]
         [ForeignKey("User")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
-        public virtual User User { get; set; }
+        public virtual ApplicationUser User { get; set; }
 
         [Required()]
         [Display(Name = "Category Name", Description = "Name of Category")]
@@ -37,8 +38,13 @@ namespace Pocket.Models
         public double BudgetAmount { get; set; }
 
         public virtual List<Subcategory> Subcategories { get; set; }
-     
 
+        [ForeignKey("CategoryID")]
+        [Display(Name = "Shared With Friends", Description = "Shared With Friends")]
+        public virtual List<CategoryUser> SharedContacts { get; set; }
+
+        [Column("display")]
+        public DisplaySetting Display { get; set; }
     }
 
 }

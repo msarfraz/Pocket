@@ -61,13 +61,15 @@ namespace Pocket.ViewModels
         public List<Income> Incomes { get; set; }
 
         public List<Account> Accounts { get; set; }
+        public List<Account> OtherAccounts { get; set; }
         public List<Category> Categories { get; set; }
+        public List<Category> OtherCategories { get; set; }
         public List<Vendor> Vendors { get; set; }
         public List<Event> MyEvents { get; set; }
         public List<Event> SharedEvents { get; set; }
         public List<Payee> Payees { get; set; }
 
 
-        public User CurrentUser { get; set; }
+        public ApplicationUser CurrentUser { get; set; }
     }
 }

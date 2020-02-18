@@ -1,0 +1,37 @@
+
+
+<div class="pages">
+	<div data-page="transferlist" class="page transferlist-page" data-pg-controller="transfer" data-pg-init="initlist">
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left"><a href="#" class="link icon-only open-panel"><i class="icon icon-bars"></i></a></div>
+        <div class="center sliding payees-list-header" style="left:22px">Account Transfers</div>
+        <div class="right">
+            <a href="Pages/Transfer.html" class="link icon-only"><i class="icon icon-plus">+</i></a>
+        </div>
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar searchbar-init" data-search-list=".transfers-list" data-search-in=".item-subtitle" data-found=".searchbar-found" data-not-found=".searchbar-not-found">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content transfer-infinite-scroll infinite-scroll data-distance="100">
+            <!-- This block will be displayed if nothing found -->
+            <div class="content-block searchbar-not-found">
+                <div class="content-block-inner">No Transfer found</div>
+            </div>
+
+            <div class="list-block media-list transfers-list searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+       
+	</div>
+</div>

@@ -1,111 +1,241 @@
 ﻿@model Pocket.ViewModels.ReportData
-
+@using Pocket.Common
 @{
-    ViewBag.Title = "List";
+    ViewBag.Title = "Advance Criteria";
 }
 
 <link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
 <link href="~/Content/themes/redmond/jquery.ui.datepicker.css" rel="stylesheet" />
 <link href="~/Content/themes/redmond/jquery.ui.dialog.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-select.min.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-switch.min.css" rel="stylesheet" />
 
+<script src="~/Scripts/bootstrap-switch.min.js"></script>
 <script src="~/Scripts/grid.locale-en.js"></script>
-<script src="~/Scripts/jquery.jqGrid.src.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
 <script src="~/Scripts/QIE/JqGrid.js"></script>
 <script src="~/Scripts/QIE/DatePickerReady.js"></script>
+<script src="~/Scripts/bootstrap-select.min.js"></script>
 
-<br />
+<style type="text/less">
+    .item {
+        background: #333;
+        text-align: center;
+        height: 300px;
+    }
+</style>
 
 <p>
-   <b>Expense</b> <label for="ExpenseTo">From:</label>
-    @Html.TextBox("ExpenseFrom", new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToShortDateString()) <label for="ExpenseTo">To:</label>
-    @Html.TextBox("ExpenseTo", DateTime.Now.ToShortDateString())
-</p>
-<p>
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="input-group">
+                <span class="input-group-addon">From:</span>
+                @Html.TextBox("ExpenseFrom", DateTime.Today.MonthFirstDate().ToDateString(), new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="input-group">
+                <span class="input-group-addon">To:</span>
+                @Html.TextBox("ExpenseTo", DateTime.Today.MonthLastDate().ToDateString(), new { @class = "form-control" })
 
-    <label for="EventID">Select Event:</label>
-    <select name="EventID" id="EventID" onchange="ReloadGrid()">
-        <option label="" value="" />
-        <optgroup label="My Events" />
-        @foreach (var item in Model.MyEvents)
-        {
-            <option label="@item.Name" value="@item.EventID" />
-        }
-        <optgroup label="Friends Events" />
-        @foreach (var item in Model.SharedEvents)
-        {
-            <option label="@item.Name" value="@item.EventID" />
-        }
+            </div>
 
-    </select>
-    <label for="AccountID">Select Account:</label>
-    <select name="AccountID" id="AccountID" onchange="ReloadGrid()">
-        <option label="" value="" />
-        @foreach (var item in Model.Accounts)
-        {
-            <option label="@item.Name" value="@item.AccountID" />
-        }
-    </select>
-    <label for="CategoryID">Select Category:</label>
-    <select name="SubcatID" id="SubcatID" onchange="ReloadGrid()">
-        <option label="" value="" />
+        </div>
+        <div class="col-sm-3">
+            <div class="input-group">
+                <span class="input-group-addon">Account:</span>
+                <select name="AccountID" id="AccountID" onchange="ReloadGrid()" class="selectpicker" data-size="5" data-style="btn btn-default ">
+                    <option label="" value="" />
+                    @foreach (var account in Model.Accounts)
+                    {
+                        <option value="@account.AccountID">@account.Name</option>
 
-        @foreach (var item in Model.Categories)
-        {
-            <optgroup label="@item.Name" />
-            foreach (var i in item.Subcategories)
-            {
-                <option label="@i.Name" value="@i.SubcategoryID" />
-            }
+                    }
+                    <option data-divider="true"></option>
+                    @foreach (var account in Model.OtherAccounts)
+                    {
+                        <option value="@account.AccountID" data-subtext="@account.User.UserName" >@account.Name</option>
 
-        }
-    </select>
-    <label for="PayeeID">Select Payee:</label>
-    <select name="PayeeID" id="PayeeID" onchange="ReloadGrid()">
-        <option label="" value="" />
-        @foreach (var item in Model.Payees)
-        {
-            <option label="@item.Name" value="@item.PayeeID" />
-        }
-    </select>
-    <label for="VendorID">Select Vendor:</label>
-    <select name="VendorID" id="VendorID" onchange="ReloadGrid()">
-        <option label="" value="" />
-        @foreach (var item in Model.Vendors)
-        {
-            <option label="@item.Name" value="@item.VendorID" />
-        }
-    </select>
+                    }
+
+                </select>
+               
+            </div>
+
+        </div>
+        <div class="col-sm-3">
+            <div class="input-group">
+                <span class="input-group-addon">
+
+                    All Users
+                </span>
+            <span class="input-group-addon">
+                <input name="chkAllUsers" id="chkAllUsers" type="checkbox" checked="checked" data-size='mini' data-on-color='primary' data-off-color='default' onclick="ReloadGrid()" title="Display expenses made by all users.">
+            </span>
+            </div>
+
+        </div>
+
+        </div>
+    <div class="row">
+       
+     
+      
+    </div>
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="input-group">
+                    <span class="input-group-addon">Category:</span>
+                    <select name="SubcatID" id="SubcatID" onchange="ReloadGrid()" class="form-control" >
+                        <option label="" value="" />
+
+                        @foreach (var item in Model.Categories)
+                        {
+                            <optgroup label="@item.Name" />
+                            foreach (var i in item.Subcategories)
+                            {
+                                <option value="@i.SubcategoryID">@i.Name</option>
+                            }
+
+                        }
+
+                        @foreach (var item in Model.OtherCategories)
+                        {
+
+                            <optgroup label='@string.Format("{0} [{1}]", item.Name, item.User.UserName)' />
+                            foreach (var i in item.Subcategories)
+                            {
+                                <option value="@i.SubcategoryID">@i.Name</option>
+                            }
+                        }
+                    </select>
+                    
+                </div>
+
+            </div>
+            <div class="col-sm-3">
+                <div class="input-group">
+                    <span class="input-group-addon">Event:</span>
+                    <select name="EventID" id="EventID" onchange="ReloadGrid()" class="selectpicker" data-size="5" data-style="btn btn-default">
+                        <option label="" value="" />
+                        @foreach (var item in Model.MyEvents)
+                        {
+                            <option value="@item.EventID">@item.Name</option>
+                        }
+                        <option data-divider="true"></option>
+                        @foreach (var item in Model.SharedEvents)
+                        {
+                            <option value="@item.EventID" data-subtext="@item.User.UserName">@item.Name</option>
+                        }
+
+                    </select>
+                    
+                </div>
+
+            </div>
+
+
+            <div class="col-sm-3">
+                <div class="input-group">
+                    <span class="input-group-addon">Payee:</span>
+                    <select name="PayeeID" id="PayeeID" onchange="ReloadGrid()" class="form-control">
+                        <option label="" value="" />
+                        @foreach (var item in Model.Payees)
+                    {
+                            <option label="@item.Name" value="@item.PayeeID" />
+                    }
+                    </select>
+
+                </div>
+
+            </div>
+            <div class="col-sm-3">
+                <div class="input-group">
+                    <span class="input-group-addon">Vendor:</span>
+                    <select name="VendorID" id="VendorID" onchange="ReloadGrid()" class="form-control">
+                        <option label="" value="" />
+                        @foreach (var item in Model.Vendors)
+                        {
+                            <option label="@item.Name" value="@item.VendorID" />
+                        }
+                    </select>
+
+                </div>
+
+            </div>
+        </div>
     
 </p>
 
-
-
 <table id="rowed2"></table>
 <div id="prowed2"></div>
+<p>
+
+    <div class="btn-group">
+        <div class="col-xs-4">
+
+            <div class="input-group">
+                <span class="input-group-addon">Choose Columns:</span>
+                <select class="selectpicker" multiple data-selected-text-format="count>3" id="pagecolumns" onchange="ShowHideColumn()">
+                    <option value="PayeeID">Payee</option>
+                    <option value="VendorID">Vendor</option>
+                    <option value="EventID">Event</option>
+                    <option value="Comments">Comments</option>
+                    <option value="UserID">User Name</option>
+                </select>
+
+            </div>
+        </div>
+    </div>
+</p>
 <div>
     @Html.AntiForgeryToken()
 </div>
 <script type="text/javascript">
-    var colNames = ['ExpenseID', 'Expense Date', 'Category', 'Account', 'Amount', 'Payee', 'Vendor','Event', 'Repeat', 'Comments'];
+    var colNames = ['ExpenseID', 'Expense Date', 'Category', 'Account', 'Amount', 'Payee', 'Vendor','Event', 'Repeat', 'Comments', 'By'];
     var colModel = [
         { name: 'ExpenseID', index: 'ExpenseID', width: 55, key: true, hidden: true },
-        { name: 'ExpenseDate', index: 'ExpenseDate', width: 100, sorttype: "date", datefmt: 'mm/dd/yyyy' },
-        { name: 'SubcategoryID', index: 'SubcategoryID', width: 100 },
-        { name: 'AccountID', index: 'AccountID', width: 100 },
-        { name: 'Amount', index: 'Amount', width: 100 },
-        { name: 'PayeeID', index: 'PayeeID', width: 100 },
-        { name: 'VendorID', index: 'VendorID', width: 100 },
-        { name: 'EventID', index: 'EventID', width: 100},
-        { name: 'Repeat', index: 'Repeat', width: 100 },
-        { name: 'Comments', index: 'Comments', width: 100, editable: false, formatter: CommentFormatter }
-
+        { name: 'ExpenseDate', index: 'ExpenseDate', width: 65, sorttype: "date", datefmt: 'mm/dd/yyyy' },
+        { name: 'SubcategoryID', index: 'SubcategoryID' },
+        { name: 'AccountID', index: 'AccountID' },
+        { name: 'Amount', index: 'Amount', width: 55 },
+        { name: 'PayeeID', index: 'PayeeID', hidden: true },
+        { name: 'VendorID', index: 'VendorID', hidden: true },
+        { name: 'EventID', index: 'EventID', hidden: true },
+        { name: 'Repeat', index: 'Repeat', width: 55},
+        { name: 'Comments', index: 'Comments', editable: false, formatter: CommentFormatter, hidden: true },
+        { name: 'UserID', index: 'UserID', hidden: true }
     ];
-    
+    function ShowHideColumn() {
+        var str = $("#pagecolumns").val();
+        SetGridColumns(str);
+        setPageSettings(str.join());
+
+    }
+    function getPageSettings() {
+        PostData("/User/GetPageSettings", {}, function (response) {
+            SetGridColumns(response.PageSetting.split(","));
+            $("#pagecolumns").selectpicker('val', response.PageSetting.split(","));
+        });
+    }
+    function setPageSettings(psetting) {
+        PostData("/User/SetPageSettings", { PageSetting: psetting });
+    }
+    function SetGridColumns(str) {
+        jQuery("#rowed2").jqGrid('hideCol', ["PayeeID", "VendorID", "EventID","Comments", "UserID"]);
+        jQuery("#rowed2").jqGrid('showCol', str);
+        jQuery("#rowed2").setGridWidth($(".container").width() - 5, true);
+    }
     function ReloadGrid() {
         jQuery("#rowed2").jqGrid().trigger("reloadGrid");
     }
 
-
+    $('.selectpicker').selectpicker();
+    $("#chkAllUsers").bootstrapSwitch();
+    $("#chkAllUsers").on('switchChange.bootstrapSwitch', function (e, data) {
+        ReloadGrid();
+    });
+    // $('.selectpicker').addClass('form-control').selectpicker('setStyle');
     var postData = {};
     postData["EventID"] = function () { return $("#EventID").val() };
     postData["AccountID"] = function () { return $("#AccountID").val() };
@@ -114,9 +244,15 @@
     postData["VendorID"] = function () { return $("#VendorID").val() };
     postData["ExpenseFrom"] = function () { return $("#ExpenseFrom").val() };
     postData["ExpenseTo"] = function () { return $("#ExpenseTo").val() };
+    postData["AllUsers"] = function () { return $("#chkAllUsers").is(':checked') };
+    createJQGrid('/report/JAdvanceFilter', colNames, colModel, 'ExpenseID', "", "Expense List", "#rowed2", '#prowed2', postData, { addgrid: false, editgrid: false, footerrow: true, loadComplete: loadCompleteFunc });
+    function loadCompleteFunc() {
+        var grid = $("#rowed2"),
+            sum = grid.jqGrid('getCol', 'Amount', false, 'sum');
 
-    createJQGrid('/report/JAdvanceFilter', colNames, colModel, 'ExpenseID', "", "Expense List", "#rowed2", '#prowed2', postData, { addgrid: false, editgrid: false });
-
+        grid.jqGrid('footerData', 'set', { ExpenseDate: 'Total:', Amount: sum.toFixed(2) });
+        getPageSettings();
+    }
 
     /////////////////////
     //   Expense Comments
@@ -126,7 +262,7 @@
         // format the cellvalue to new format
 
         if (cellvalue && cellvalue.length > 0) {
-            var tag = "<a href='#' onclick='ShowComments(" + rowObject[0] + ")'>" + cellvalue + "</a>";
+            var tag = "<a href='#' onclick='ShowComments(" + rowObject[0] + ")'>" + cellvalue + " <span class='glyphicon glyphicon-comment'></span> </a>";
             return tag;
         }
         else
@@ -138,35 +274,27 @@
         $("#hdnExpenseID").val(expenseID);
 
         if (firsttime) {
-            dialog = $("#commentsDialog").dialog({
-                autoOpen: false,
-                height: 400,
-                width: 450,
-                show: {
-                    effect: "blind",
-                    duration: 1000
-                }
-            });
-            dialog.dialog("open");
+            $("#commentsModal").modal('show');
+
             var commPostData = {};
             commPostData["ExpenseID"] = function () { return $("#hdnExpenseID").val() };
 
             createJQGrid('/expense/JExpenseComments', commColNames, commColModel, 'CommentID', "/expense/jcommentedit", "Add/View Comments", "#lstComments", '#pgrComments', commPostData, { sidx: 'CommentID', sord: 'desc', editgrid: false, editExtraParams: { ExpenseID: function () { return $("#hdnExpenseID").val() } } });
             firsttime = false;
         }
-        dialog.dialog("open");
+        $("#commentsModal").modal('show');
         jQuery("#lstComments").jqGrid().trigger("reloadGrid");
     }
     var commColNames = ['CommentID', 'ExpenseID', 'Comment', 'By', 'Date'];
     var commColModel = [
-        { name: 'CommentID', index: 'CommentID', width: 55, key: true, hidden: true },
-        { name: 'ExpenseID', index: 'ExpenseID', width: 55, hidden: true },
-        { name: 'Comment', index: 'Comment', width: 155, key: true, editable: true, edittype: "textarea", editoptions: { rows: "3", cols: "25" } },
-        { name: 'UserID', index: 'UserID', width: 55, editable: false },
-        { name: 'CommentDate', index: 'CommentDate', width: 55, editable: false }
+        { name: 'CommentID', index: 'CommentID', key: true, hidden: true },
+        { name: 'ExpenseID', index: 'ExpenseID', hidden: true },
+        { name: 'Comment', index: 'Comment', width: 300, key: true, editable: true, edittype: "textarea", editoptions: { rows: "5", cols: "40" } },
+        { name: 'UserID', index: 'UserID', editable: false },
+        { name: 'CommentDate', index: 'CommentDate', width: 75, editable: false }
     ];
     var firsttime = true;
-    var dialog;
+
     $(document).ready(function () {
         $("#ExpenseFrom").datepicker({
             onSelect: function (dateText) {
@@ -181,8 +309,17 @@
     });
 </script>
 <input type="hidden" id="hdnExpenseID" />
-<div id="commentsDialog" title="Comments">
-    <table id="lstComments" style="height:100%"></table>
-    <div id="pgrComments"></div>
-
+<div id="commentsModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title">Comments</h5>
+            </div>
+            <div class="modal-body">
+                <table id="lstComments" style="height:100%"></table>
+                <div id="pgrComments"></div>
+            </div>
+        </div>
+    </div>
 </div>

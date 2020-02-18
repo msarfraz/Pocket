@@ -1,0 +1,68 @@
+    
+        <form id="categoryedit" class="list-block">
+            <input name="CategoryID" type="hidden" value="{{model.CategoryID}}">
+        <ul>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-android-folder color-form-icon"></i></div>
+                    <div class="item-inner">
+                        
+                            <div class="item-title label">Name</div>
+                                <div class="item-input">
+
+                                <input name="CategoryName" type="text" placeholder="Category Name" value="{{model.Name}}" />
+                                </div>
+                   </div>
+                </div>
+            </li>
+            {{#if model.CategoryID}}
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-social-usd color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Budget</div>
+                        <div class="item-input">
+                            <input name="CategoryBudget" type="number" class="item-input" disabled placeholder="Category budget" value="{{model.Budget}}" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {{/if}}
+        </ul>
+    </form>
+
+       {{#if model.CategoryID}}
+        <div class="content-block-title">Sub Categories</div>
+        <div class="list-block">
+            <ul>
+                <li>
+                    <a href="Pages/Subcategory.html?catid={{model.CategoryID}}" class="item-link item-content">
+                        <div class="item-inner">
+                            <div class="item-title-row">
+                                <div class="item-title"></div>
+                            </div>
+                            <div class="item-subtitle">Add Subcategory...</div>
+                        </div>
+                    </a>
+                </li>
+                {{#each model.Subcategories}}
+                <li class="swipeout subcategory-swipeout-{{SubcategoryID}}">
+                    <a href="Pages/Subcategory.html?id={{SubcategoryID}}&catid={{../model.CategoryID}}" class="item-link item-content swipeout-content">
+                        <div class="item-media"><i class="icon ion-filing color-form-icon"></i></div>
+                        <div class="item-inner">
+                            
+                            <div class="item-title-row">
+                                <div class="item-title">{{Name}}</div>
+                                <div class="item-after">{{BudgetDurationText}}</div>
+                            </div>
+                            <div class="item-subtitle">{{Budget}}</div>
+                        </div>
+                    </a>
+                    <div class="swipeout-actions-right">
+                        <a href="#" class="subcategory-delete-link bg-red" data-id="{{SubcategoryID}}">Delete</a>
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}

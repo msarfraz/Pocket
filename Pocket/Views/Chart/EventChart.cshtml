@@ -1,64 +1,149 @@
-﻿@model DotNet.Highcharts.Highcharts
+﻿
 @{
-    ViewBag.Title = "EventChart";
+    ViewBag.Title = "Events Chart";
 }
-<script src="~/Scripts/QIE/Common.js"></script>
-
+<script src="~/Scripts/Highcharts-4.1.5/js/highcharts.js"></script>
 <br />
-
 <p>
-    <label for="ddlMonth">Events of the month:</label>
-    <select name="ddlMonth" id="ddlMonth" onchange="ReloadChart()">
-        <option value="1" label="January" />
-        <option value="2" label="February" />
-        <option value="3" label="March" />
-        <option value="4" label="April" />
-        <option value="5" label="May" />
-        <option value="6" label="June" />
-        <option value="7" label="July" />
-        <option value="8" label="August" />
-        <option value="9" label="September" />
-        <option value="10" label="October" />
-        <option value="11" label="November" />
-        <option value="12" label="December" />
-    </select>
-    <select name="ddlYear" id="ddlYear" onchange="ReloadChart()">
-        @for (int i = 2001; i < 2020; i++)
-        {
-            <option value="@i" label="@i" />
-        }
-    </select>
+    <div class="row">
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">Month:</span>
+                <select name="ddlMonth" id="ddlMonth" onchange="LoadChart()" class="form-control">
+                    <option value="1" label="January" />
+                    <option value="2" label="February" />
+                    <option value="3" label="March" />
+                    <option value="4" label="April" />
+                    <option value="5" label="May" />
+                    <option value="6" label="June" />
+                    <option value="7" label="July" />
+                    <option value="8" label="August" />
+                    <option value="9" label="September" />
+                    <option value="10" label="October" />
+                    <option value="11" label="November" />
+                    <option value="12" label="December" />
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">Year:</span>
+                <select name="ddlYear" id="ddlYear" onchange="LoadChart()" class="form-control">
+                    @for (int i = 2001; i < 2020; i++)
+                    {
+                        <option value="@i" label="@i" />
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
     @Html.AntiForgeryToken()
 </p>
-<script src="~/Scripts/Highcharts-4.0.1/js/highcharts.src.js"></script>
-<script src="~/Scripts/Highcharts-4.0.1/js/highcharts-more.src.js"></script>
-@(Model)
+
+<div id="chartcolumn">
+
+</div>
+<br />
+<div id="chartpie">
+
+</div>
 
 
 <script>
     $("#ddlMonth").val('@DateTime.Today.Month');
     $("#ddlYear").val('@DateTime.Today.Year');
 
-    function ReloadChart()
-    {
-        PostData("/Chart/EventChartData", { Month: $("#ddlMonth").val(), Year: $("#ddlYear").val()}, function(response){
 
-            while (eventchart.series.length > 0)
-                eventchart.series[0].remove();
-            for (i = 0; i < response.length; i++) {
-                eventchart.addSeries({
-                    name: response[i].name,
-                    data: response[i].data
-                },false);
-            }
-            eventchart.redraw();
+    function LoadChart() {
+
+        PostData("/Chart/JEventChartData", { Month: $("#ddlMonth").val(), Year: $("#ddlYear").val() }, function (response) {
+            var d = response.rows;
+
+            $('#chartcolumn').highcharts({
+                chart: {
+                    type: 'bar'
+                },
+                title: {
+                    text: 'Budget and Expense'
+                },
+                subtitle: {
+                    text: 'Event view'
+                },
+                xAxis: {
+                    categories: d.categories,
+                    title: {
+                        text: null
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Amount',
+                        align: 'high'
+                    },
+                    labels: {
+                        overflow: 'justify'
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        dataLabels: {
+                            enabled: true
+                        }
+                    }
+                },
+
+                credits: {
+                    enabled: false
+                },
+                series: d.series
+            });
+
+            var p = toPieData(d);
+
+            $('#chartpie').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                title: {
+                    text: 'Events'
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Events share',
+                    data: p
+                }]
+            });
+
         });
-        
-        
+
     }
 
-    
+    LoadChart();
+
 </script>
+
+
+
 
 
 

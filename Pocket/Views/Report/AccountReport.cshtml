@@ -1,0 +1,130 @@
+﻿@model Tuple<List<Pocket.Models.Account>, List<Pocket.Models.Account>, int>
+
+@{
+    ViewBag.Title = "Accounts Report";
+}
+
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<link href="~/Content/themes/redmond/jquery.ui.datepicker.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-select.min.css" rel="stylesheet" />
+
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/DatePickerReady.js"></script>
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+
+<p>
+    <div class="row">
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">Account:</span>
+
+                <select name="ddlAccounts" id="ddlAccounts" onchange="ReloadGrid()" class="selectpicker" >
+                    @foreach (var account in Model.Item1)
+                    {
+                        <option value="@account.AccountID">@account.Name</option>
+
+                    }
+                    @if (Model.Item2.Count > 0)
+                    {
+                        
+                    <option data-divider="true"></option>
+                    }
+                    @foreach (var account in Model.Item2)
+                    {
+                        <option value="@account.AccountID" data-subtext="@account.User.UserName" >@account.Name</option>
+
+                    }
+
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">Month:</span>
+                <select name="ddlMonth" id="ddlMonth" onchange="ReloadGrid()" class="form-control">
+                    <option value="1" label="January" />
+                    <option value="2" label="February" />
+                    <option value="3" label="March" />
+                    <option value="4" label="April" />
+                    <option value="5" label="May" />
+                    <option value="6" label="June" />
+                    <option value="7" label="July" />
+                    <option value="8" label="August" />
+                    <option value="9" label="September" />
+                    <option value="10" label="October" />
+                    <option value="11" label="November" />
+                    <option value="12" label="December" />
+                </select>
+            </div>
+        </div>
+            <div class="col-xs-4">
+                <div class="input-group">
+                    <span class="input-group-addon">Year:</span>
+                    <select name="ddlYear" id="ddlYear" onchange="ReloadGrid()" class="form-control">
+                        @for (int i = 2001; i < 2020; i++)
+                        {
+                            <option value="@i" label="@i" />
+                        }
+                    </select>
+                </div>
+                </div>
+            
+
+    </div>
+    
+    
+    
+    
+</p>
+
+<table id="rowed2"></table>
+<div id="prowed2"></div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['TransactionID', 'Date', 'By', 'Description', 'Withdrawl', 'Deposit', 'Balance'];
+    var colModel = [
+        { name: 'TransactionID', index: 'TransactionID', width: 55, hidden: true },
+        { name: 'TransactionDate', index: 'TransactionDate', width: 50, sorttype: "date", datefmt: 'mm/dd/yyyy' },
+        { name: 'UserID', index: 'UserID', width: 50, },
+        { name: 'Description', index: 'Description' },
+        { name: 'Withdrawl', index: 'Withdrawl', width: 100, formatter: AmountFormatter, summaryType: 'sum' },
+        { name: 'Deposit', index: 'Deposit', width: 100, formatter: AmountFormatter, summaryType: 'sum' },
+        { name: 'Balance', index: 'Balance', width: 100 }
+
+    ];
+
+    function AmountFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        if (cellvalue == "0") //budget
+        {
+            return "<b> - </b>";
+        }
+
+        return cellvalue;
+
+
+    }
+
+
+    function ReloadGrid() {
+        jQuery("#rowed2").jqGrid().trigger("reloadGrid");
+    }
+
+    $("#ddlMonth").val('@DateTime.Today.Month');
+    $("#ddlYear").val('@DateTime.Today.Year');
+    $('.selectpicker').selectpicker();
+    $('#ddlAccounts').val('@Model.Item3');
+    $('#ddlAccounts').selectpicker('render');
+
+    var postData = {};
+    postData["Month"] = function () { return $("#ddlMonth").val() };
+    postData["Year"] = function () { return $("#ddlYear").val(); };
+    postData["AccountID"] = function () { return $("#ddlAccounts").val(); };
+
+    createJQGrid('/report/JAccountReport', colNames, colModel, 'AccountID', "", "Account Transactions", "#rowed2", '#prowed2',
+        postData, { sidx: 'TransactionDate', sord: 'desc', addgrid: false, editgrid: false });
+</script>

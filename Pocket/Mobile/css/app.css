@@ -1,0 +1,211 @@
+.navbar {
+  border-bottom: none;
+  background: #7676BC;
+  color: #ffffff;
+}
+.navbar a.link {
+  color: #ffffff;
+}
+
+i.icon-plus {
+  height: 25px;
+  font-size: 31px;
+  line-height: 20px;
+  font-weight: 100;
+}
+
+/*
+	Android optimization hacks
+*/
+html.android .navbar-from-right-to-center .left.sliding .back.link .icon,
+html.android .navbar-from-center-to-right .left.sliding .back.link .icon,
+html.android .navbar-from-center-to-left .left.sliding .back.link .icon,
+html.android .navbar-from-left-to-center .left.sliding .back.link .icon {
+  -webkit-transition-duration: 200ms;
+  transition-duration: 200ms;
+}
+html.android .navbar-from-right-to-center .sliding,
+html.android .navbar-from-center-to-right .sliding,
+html.android .navbar-from-center-to-left .sliding,
+html.android .navbar-from-left-to-center .sliding {
+  -webkit-transition-duration: 200ms;
+  transition-duration: 200ms;
+}
+html.android .page-from-right-to-center {
+  -webkit-animation: pageFromRightToCenterDegrade 200ms forwards;
+  animation: pageFromRightToCenterDegrade 200ms forwards;
+}
+html.android .page-from-center-to-right {
+  -webkit-animation: pageFromCenterToRightDegrade 200ms forwards;
+  animation: pageFromCenterToRightDegrade 200ms forwards;
+}
+html.android .page-on-left {
+  opacity: 1;
+  -webkit-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+html.android .page-from-center-to-left {
+  -webkit-animation: emptyAnimation 50ms forwards;
+  animation: emptyAnimation 50ms forwards;
+}
+html.android .page-from-left-to-center {
+  -webkit-animation: emptyAnimation 50ms forwards;
+  animation: emptyAnimation 50ms forwards;
+}
+@-webkit-keyframes emptyAnimation {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes emptyAnimation {
+  to {
+    opacity: 1;
+  }
+}
+html.android .list-block .list-group-title {
+  display: none;
+}
+html.android .label-switch input[type="checkbox"] + .checkbox {
+  -webkit-transition-duration: 0ms;
+  transition-duration: 0ms;
+}
+html.android .label-switch input[type="checkbox"] + .checkbox:before {
+  -webkit-transition-duration: 0ms;
+  transition-duration: 0ms;
+}
+html.android .label-switch input[type="checkbox"] + .checkbox:after {
+  -webkit-transition-duration: 0ms;
+  transition-duration: 0ms;
+}
+ /*3D panel changes*/
+ 
+ body {
+            /*background: #074d55;*/
+            background: white;
+           /* background: -moz-radial-gradient(center, ellipse cover, #a7cfdf 0%, #23538a 100%); 
+            background: -webkit-gradient(radial, right bottom, 0px, left top, 100%, color-stop(0%,#6967a5), color-stop(50%,#2075a1), color-stop(100%,#074d55));
+            background: -webkit-radial-gradient(right bottom, ellipse cover, #6967a5 0%, #2075a1 50%, #074d55 100%);
+            background: radial-gradient(ellipse at right bottom, #6967a5 0%, #2075a1 50%, #074d55 100%); */
+        }
+
+        .panel .page, .panel .pages, .panel {
+            /**/
+            background: 	#3f51b5;
+        }
+
+            .panel .list-block ul {
+                background: none;
+                border: none;
+            }
+
+            .panel .list-block .item-link {
+                color: #fff;
+            }
+
+                .panel .list-block .item-link:active {
+                    background: rgba(255,255,255,0.2);
+                }
+
+            .panel .list-block .item-inner {
+                border-bottom-color: rgba(255,255,255,0.2);
+            }
+
+            .panel .content-block, .panel .content-block-title {
+                color: #fff;
+            }
+
+           /* Progress bar*/
+
+           progress {
+	/*width: 400px;*/
+	height: 16px;
+	margin: auto;
+	display: block;
+	/* Important Thing */
+	-webkit-appearance: none;
+	border: none;
+}
+
+/* All good till now. Now we'll style the background */
+progress::-webkit-progress-bar {
+	background: lightgrey;
+	border-radius: 50px;
+    
+	padding: 2px;
+	box-shadow: 0 1px 0px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Now the value part */
+progress::-webkit-progress-value {
+    background: #ABABF4;
+	border-radius: 50px;
+	box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
+	
+	
+	
+}
+.progresslabel {
+   
+    position: relative;
+    left: -100px;
+    font-size: small;
+    /*color:black;*/
+    font-weight:bold;
+    width:200px;
+}
+
+/* 
+.panel {
+  background: white;
+}
+
+.panel .list-block .item-content {
+  background: #7676BC;
+  border-bottom: 1px solid #8ba9c4;
+}
+body.with-panel-left-reveal .statusbar-overlay {
+  background: #7676BC;
+}
+
+.panel ul {
+  border-bottom: 0px;
+  border-top: 1px solid #8ba9c4;
+}
+.panel .list-block .item-link:active {
+  background-color: #5884aa;
+}
+.panel .list-block .item-link .item-inner {
+  background: none;
+  border-bottom: 0px;
+}
+.panel .list-block .item-title {
+  color: #fafafa;
+}
+.panel .list-block i {
+  color: #fafafa;
+  font-size: 25px;
+  font-weight: 100;
+}
+.popup-overlay {
+  background: rgba(128, 128, 128, 0.2);
+}
+.popup .navbar {
+  -webkit-transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+}
+.statusbar-overlay {
+  background: #74baee;
+}
+
+.infinite-scroll-preloader {
+  margin-top:-20px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.infinite-scroll-preloader .preloader {
+  width:34px;
+  height:34px;
+}  
+
+ */

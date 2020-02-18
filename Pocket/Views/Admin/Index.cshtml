@@ -1,0 +1,54 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+<script src="~/Scripts/jquery-2.0.3.js"></script>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/Common.js"></script>
+
+<br />
+
+
+@if(User.IsInRole("Admin"))
+{
+   <p>
+       <a href="/Schedule/Index" class="btn btn-primary">Schedulers </a>
+       <a href="/Home/Feed" class="btn btn-success">Feed </a>
+</p>
+    
+<table id="rowed2"></table>
+<div id="prowed2"></div>
+    <span class="error">@ViewBag.Message</span>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['CustomerRequestID', 'Name', 'Email', 'Created Date', 'Title', 'Body'];
+    var colModel = [
+        { name: 'CustomerRequestID', index: 'CustomerRequestID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100 },
+        { name: 'Email', index: 'Email', width: 100 },
+        { name: 'CreatedDate', index: 'CreatedDate', width: 100 },
+        { name: 'Title', index: 'Title', width: 100 },
+        { name: 'Body', index: 'Body', width: 100 }
+
+
+    ];
+    createJQGrid('/admin/crequests', colNames, colModel, 'CustomerRequestID', "", "Request List", "#rowed2", '#prowed2', null, { sidx: 'CreatedDate',sord:'desc', addgrid: false, editgrid: false });
+
+    
+</script>
+}
+else
+{
+    
+    <form action="/Admin/Assign" method="post" id="assignForm">
+<p>
+        @Html.AntiForgeryToken()
+        <input type="submit" class="btn btn-default" value="Assign" />
+</p>
+    </form>
+}

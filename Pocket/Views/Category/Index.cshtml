@@ -1,40 +1,95 @@
 ﻿@model IEnumerable<Pocket.Models.Category>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Categories";
 }
 
-<h2>Index</h2>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
 
-<p>
-    @Html.ActionLink("Create New", "Create") | @Html.ActionLink("Quick View", "List")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.IconID)
-        </th>
-       
-    </tr>
+<br />
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.IconID)
-        </td>
-        
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.CategoryID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.CategoryID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.CategoryID })
-        </td>
-    </tr>
-}
+<table id="lstCategory"></table>
+<div id="pgrCategory"></div>
 
-</table>
+<br />
+
+<table id="lstSharedCategory"></table>
+<div id="pgrSharedCategory"></div>
+
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['CategoryID', 'Name', 'Monthly Budget', 'Shared'];
+    var colModel = [
+        { name: 'CategoryID', index: 'CategoryID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', editable: true, editrules: { required: true } },
+        { name: 'Budget', index: 'Budget', editable: false, summaryType: 'sum' },
+        { name: 'Shared', formatter: ShareFormatter, editable: false }
+    ];
+    var sgColNames = ['SubcategoryID','CategoryID', 'Name', 'Budget Amount', 'Budget Duration'];
+    var sgColModel = [
+        { name: 'SubcategoryID', index: 'SubcategoryID', width: 55, key: true, hidden: true },
+        { name: 'CategoryID', index: 'CategoryID', width: 55, hidden: true },
+        { name: 'Name', index: 'Name', editable: true, editrules: { required: true } },
+        { name: 'BudgetAmount', index: 'BudgetAmount', width: 30, editable: true, editrules: { required: true, number: true } },
+        { name: 'BudgetDuration', index: 'BudgetDuration', width: 50, editable: true, edittype: 'select', editrules: { required: false, select: true }, editoptions: { dataUrl: '/api/common/RecursionOptions' } }
+    ];
+
+    CreateJQGridSubGrid('/category/jlist', colNames, colModel, 'CategoryID', "/category/jedit", "Categories", "#lstCategory", '#pgrCategory', 
+        '/subcat/jlist?CategoryID=', sgColNames, sgColModel, "SubcategoryID", "/subcat/jedit?CategoryID=", "Sub Categories", { sidx: 'Name', sord: 'asc', sg_sidx: 'Name', sg_sord: 'asc', delgrid: true, delurl: '/category/jdelete', footerrow: true, loadComplete: loadCompleteFunc });
+    function loadCompleteFunc()
+    {
+    var grid = $("#lstCategory"),
+        sum =  grid.jqGrid('getCol', 'Budget', false, 'sum');
+
+    grid.jqGrid('footerData', 'set', { Name: 'Total:', Budget: sum.toFixed(2) });
+
+    }
+    function ShareFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        var eventID = rowObject[0];
+
+        var tag;
+        if (cellvalue == "False")
+            tag = "<button type='button' class='btn btn-default btn-xs' onclick='showf(this)' data-original-cat='" + eventID + "'><span class='glyphicon glyphicon-unchecked'></span> Shared</button>";
+        else
+            tag = "<button type='button' class='btn btn-default btn-xs' onclick='showf(this)' data-original-cat='" + eventID + "'><span class='glyphicon glyphicon-check'></span> Shared</button>";
+        return tag;
+    }
+    function showf(me) {
+
+        ShowFriends($(me).data('original-cat'));
+
+        var firsttime = true;
+        if (firsttime) {
+            $('#dlgFriends').on('hidden.bs.modal', function (e) {
+                jQuery("#lstCategory").jqGrid().trigger("reloadGrid");
+            });
+            firsttime = false;
+        }
+    }
+
+    /////// Shared Categories ////////////
+    var sharedColNames = ['CategoryID', 'Name', 'Display', 'Monthly Budget'];
+    var sharedColModel = [
+        { name: 'CategoryID', index: 'CategoryID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', editable: false, editrules: { required: true } },
+        { name: 'Display', index: 'Display', width: 50, editable: true, edittype: 'select', editrules: { required: false, select: true }, editoptions: { dataUrl: '/category/DisplayOptions' } },
+        { name: 'Budget', index: 'Budget', editable: false}
+    ];
+    createJQGrid('/category/jSharedList', sharedColNames, sharedColModel, 'CategoryID', "/category/jSharedEdit", "Shared Categories", "#lstSharedCategory", '#pgrSharedCategory', null, { sidx: 'Name', sord: 'asc', addgrid: false, footerrow: true, loadComplete: loadOtherCompleteFunc });
+    function loadOtherCompleteFunc() {
+        var grid = $("#lstSharedCategory"),
+            sum = grid.jqGrid('getCol', 'Budget', false, 'sum');
+
+        grid.jqGrid('footerData', 'set', { Name: 'Total:', Budget: sum.toFixed(2) });
+
+    }
+
+ </script>
+
+@Html.Partial("ShareResource", Pocket.Common.SharedResourceType.Category.GetHashCode())

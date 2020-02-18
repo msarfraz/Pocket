@@ -1,0 +1,123 @@
+    <form id="eventedit">
+        <div class="list-block">
+            <input name="EventID" type="hidden" value="{{model.EventID}}">
+            <ul>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-speakerphone color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Name</div>
+                            <div class="item-input">
+                                <input name="EventName" type="text" placeholder="Event Name" value="{{model.Name}}">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-android-alarm-clock color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Date</div>
+                            <div class="item-input">
+                                <input name="EventDate" type="date" placeholder="Event Date" value="{{model.EventDate}}">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-social-usd-outline color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Amount</div>
+                            <div class="item-input">
+                                <input id="EventBudgetAmount" name="EventBudgetAmount" type="number" placeholder="Expected Expense" value="{{model.BudgetAmount}}">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                
+               
+            </ul>
+        </div>
+       <div class="list-block">
+           <ul>
+               <li>
+                   <!-- Additional "smart-select" class -->
+                   <a href="#" class="item-link smart-select" data-back-on-select="true">
+                       <!-- select -->
+                       <select name="EventBudgetDuration" class="event-budget-duration">
+                           {{#each model.RepeatTypes}}
+                           <option value="{{value}}">{{text}}</option>
+                           {{/each}}
+                       </select>
+                       <div class="item-content">
+                           <div class="item-media"><i class="icon ion-refresh color-form-icon"></i></div>
+                           <div class="item-inner">
+                               <!-- Select label -->
+                               <div class="item-title">Repeat</div>
+                               <!-- Selected value, not required -->
+                               <div class="item-after">{{model.BudgetDurationText}} </div>
+                           </div>
+                       </div>
+                   </a>
+               </li>
+
+               <li>
+                   <!-- Additional "smart-select" class -->
+                   <a href="#" class="item-link smart-select" data-back-on-select="true">
+                       <!-- select -->
+                       <select name="EventBudgeted" class="event-budgeted">
+                           <option value="0">No</option>
+                           <option value="1">Yes</option>
+                       </select>
+                       <div class="item-content">
+                           <div class="item-media"><i class="icon ion-android-checkmark color-form-icon"></i></div>
+                           <div class="item-inner">
+                               <!-- Select label -->
+                               <div class="item-title">Include in Budget</div>
+                               <!-- Selected value, not required -->
+                               <div class="item-after">{{model.BudgetedText}} </div>
+                           </div>
+                       </div>
+                   </a>
+               </li>
+
+               {{#if model.EventID}}
+               <li>
+                   <!-- Additional "smart-select" class -->
+                   <a href="#" class="item-link smart-select" data-back-on-select="true">
+                       <!-- select -->
+                       <select name="EventStatus" class="event-status">
+                           <option value="1">Active</option>
+                           <option value="2">Expired</option>
+                       </select>
+                       <div class="item-content">
+                           <div class="item-media"><i class="icon ion-alert color-form-icon"></i></div>
+                           <div class="item-inner">
+                               <!-- Select label -->
+                               <div class="item-title">Status</div>
+                               <!-- Selected value, not required -->
+                               <div class="item-after">{{model.EventStatusText}} </div>
+                           </div>
+                       </div>
+                   </a>
+               </li>
+
+
+               <li>
+                   <a href="Pages/ReportList.html?name=eventreport&eventid={{model.EventID}}" class="item-link">
+                       <div class="item-content">
+                           <div class="item-media"><span class="badge bg-red"> <i class="icon ion-ios-cart-outline color-white"></i></span> </div>
+                           <div class="item-inner">
+                               <div class="item-title">Expenses</div>
+                               <div class="item-after">
+                                   {{model.Amount}}
+                               </div>
+                           </div>
+                       </div>
+                   </a>
+               </li>
+               {{/if}}
+           </ul>
+       </div>
+    </form>

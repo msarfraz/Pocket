@@ -1,0 +1,423 @@
+﻿<!DOCTYPE html>
+<html class="with-statusbar-overlay">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Color theme for statusbar -->
+    <meta name="theme-color" content="#2196f3">
+
+    <title>Xpert Budget</title>
+    <!--<script src="lib/jquery-2.1.3.min.js"></script>-->
+
+    <!--<link rel="stylesheet" href="lib/css/framework7.ios.min.css">
+    <link href="lib/css/framework7.ios.colors.min.css" rel="stylesheet" />-->
+
+    <link rel="stylesheet" href="lib/css/framework7.material.min.css">
+    <link href="lib/css/framework7.material.colors.min.css" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="lib/css/ionicons.css">
+
+    <link href="lib/css/framework7.3dpanels.min.css" rel="stylesheet" />
+    <link href="lib/css/framework7.keypad.min.css" rel="stylesheet" />
+    <link href="lib/css/welcomescreen.css" rel="stylesheet" />
+    <!--<link href="lib/css/upscroller.css" rel="stylesheet" />-->
+
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/pocket.css">
+
+    <script type="text/template7" id="SubcatTemplate">
+        {{#each subcats}}
+            <option value='{{SubcategoryID}}'>{{Name}}</option>
+        {{/each}}
+    </script>
+    <script type="text/template7" id="CatTemplate">
+        {{#each CategoryGroups}}
+        {{#unless Name}}
+        {{#each Categories}}
+        <option value="{{CategoryID}}">{{Name}}</option>
+        {{/each}}
+        {{else}}
+        <optgroup label="{{Name}}">
+            {{#each Categories}}
+            <option value="{{CategoryID}}">{{Name}}</option>
+            {{/each}}
+        </optgroup>
+        {{/unless}}
+        {{/each}}
+    </script>
+    
+</head>
+<body class="theme-indigo">
+    <!-- Should be a direct child of BODY -->
+    <div class="login-screen">
+        <!-- Default view-page layout -->
+        <div class="view">
+            <div class="page">
+                <!-- page-content has additional login-screen content -->
+                <div class="page-content login-screen-content bg-purple">
+                    <div class="login-screen-title color-white">Xpert Budget</div>
+                    <!-- Login form -->
+                    <form id="fromLogin">
+                        <div class="list-block">
+                            <ul>
+                                <li class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title label color-white">Login</div>
+                                        <div class="item-input">
+                                            <input type="text" name="login" placeholder="Login name" class="login-name" value="">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title label color-white">Password</div>
+                                        <div class="item-input">
+                                            <input type="password" name="password" placeholder="Password" class="login-password" value="">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="item-content login-data">
+                                    <div class="item-inner">
+                                        <div class="item-title label color-white">Remember Me</div>
+                                        <div class="item-input">
+                                            <label class="label-switch">
+                                                <input type="checkbox" name="rememberme" class="login-rememberme">
+                                                <div class="checkbox"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="item-content register-data" style="display:none">
+                                    <div class="item-inner">
+                                        <div class="item-title label color-white">Confirm</div>
+                                        <div class="item-input">
+                                            <input type="password" name="confirmpassword" placeholder="Confirm Password" class="login-confirm-password">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="item-content register-data" style="display:none">
+                                    <div class="item-inner">
+                                        <div class="item-title label color-white">Email</div>
+                                        <div class="item-input">
+                                            <input type="email" name="email" class="login-email" placeholder="Valid Email address">
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="list-block inset login-connection">
+                            <div class="list-block-label"><span class="preloader preloader-white"></span><span class="color-white"> Loading content from internet... </span> <a href="#" class="color-red" onclick="location.reload()">Retry</a></div>
+                        </div>
+                        <div class="list-block login-auto" style="display:none">
+                            <div class="list-block-label"><span class="preloader preloader-white"></span><span class="color-white"> Signing in... </span> </div>
+                        </div>
+                        <div class="list-block inset login-data" style="display:none">
+                            <ul>
+                                <li>
+                                    <p>
+
+                                        <a href="#" class="button button-round login-link color-white">Sign In</a>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>
+
+                                        <a href="#" class="button button-round login-local color-white">Use Offline</a>
+                                    </p>
+                                </li>
+                            </ul>
+                            <div class="list-block-label"><span class="color-white">If you don't have an account, Register </span><a href="#" class="color-white" onclick="ShowRegister()">here</a></div>
+                        </div>
+                        <div class="list-block register-data" style="display:none">
+                            <ul>
+                                <li>
+                                    <a href="#" class="button button-round register-link color-white">Register</a>
+                                </li>
+                            </ul>
+                            <div class="list-block-label"><span class="color-white">If you already have an account, Sign In </span><a href="#" class="color-white" onclick="ShowLogin()">here</a></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="statusbar-overlay"></div>
+    <!-- Panels Overlay -->
+    <div class="panel-overlay"></div>
+    <!-- Left Panel with Reveal effect -->
+    <div class="panel panel-left panel-reveal">
+        <div class="list-block">
+            <div class="list-group">
+                <ul>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/Home.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-ios-home"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Home Page
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/AccountList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-ios-briefcase"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Accounts
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/Calendar.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-ios-calendar-outline"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Calendar
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/ExpenseList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-ios-cart"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Expenses
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/IncomeList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-social-usd"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Income List
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/EventList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-speakerphone"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Events
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/TargetList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-disc"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Targets
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/NotificationList.html" class="item-content close-panel item-link pro-link">
+                            <div class="item-media"><i class="icon ion-information-circled"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title-row">
+                                    <div class="item-title">
+
+                                        Notifications <span class="bg-red notification-count"></span>  <span class="badge bg-green">Pro</span>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/TransferList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-arrow-swap"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Account Transfer
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/FriendList.html" class="item-content item-link pro-link">
+                            <div class="item-media"><i class="icon ion-ios-people"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Contacts
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/ChartCat.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-stats-bars"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Charts
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/ReportList.html?name=advancereport" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-android-expand"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Search
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all">
+                        <a href="#" data-panel="right" class="open-panel item-content item-link">
+                            <div class="item-media"><i class="icon ion-settings"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Settings
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="#" class="item-content item-link logout-link pro-link">
+                            <div class="item-media"><i class="icon ion-log-out"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Sign Out
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right panel, with cover effect -->
+    <div class="panel panel-right panel-reveal">
+        <div class="list-block">
+            <div class="list-group">
+                <ul>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/CategoryList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-filing"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Categories
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/PayeeList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-person"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Payees
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-panel-all close-panel">
+                        <a href="Pages/VendorList.html" class="item-content item-link">
+                            <div class="item-media"><i class="icon ion-ios-location"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Vendors
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class=" list-panel-all close-panel">
+                        <a href="Pages/IncomeSourceList.html" class="item-link item-content">
+                            <div class="item-media"><i class="icon ion-social-usd"></i></div>
+                            <div class="item-inner">
+                                <div class="item-title">
+                                    Income Sources
+
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="views">
+        <div class="view view-main" >
+           
+            <div class="pages navbar-fixed toolbar-fixed">
+                
+                 <div data-page="homepage" class="page" data-pg-controller="home" data-pg-init="emptypage">
+                     <div class="navbar">
+
+                     </div>
+                    <div class="page-content">
+                    </div>
+                </div>
+            </div>
+                </div>
+            </div>
+</body>
+</html>
+
+
+<script type="text/javascript" src="cordova.js"></script>
+<script type="text/javascript" src="lib/framework7.min.js"></script>
+
+<!--Charting Libraries-->
+<script type="text/javascript" src="lib/adapters/standalone-framework.js"></script>
+<script type="text/javascript" src="lib/highcharts.js"></script>
+<script src="lib/highcharts-more.js"></script>
+
+<!--Framework 7 plugins-->
+<script src="lib/framework7.3dpanels.min.js"></script>
+<script src="lib/framework7.keypad.min.js"></script>
+<script src="lib/welcomescreen.js"></script>
+<!--<script src="lib/upscroller.js"></script>-->
+
+<script src="js/pocketUtil.js"></script>
+<script data-main="js/app.js" src="lib/require.min.js"></script>
+
+<script type="text/javascript">
+    
+
+    // Wait for Cordova to load
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    // Cordova is ready
+    function onDeviceReady() {
+        console.log("Device Ready.");
+        require(['app'], function (app) {
+            console.log("app.loaded:");
+            app.AutoLogin();
+        });
+    }
+   // onDeviceReady();
+    </script>
+

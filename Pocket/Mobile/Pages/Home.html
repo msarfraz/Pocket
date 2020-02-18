@@ -1,0 +1,98 @@
+
+<div class="pages">
+    <div data-page="home" class="page home-page" data-pg-controller="home" data-pg-init="init">
+        <div class="navbar">
+            <div class="navbar-inner">
+
+                <a href="Pages/Calendar.html" class="link no-animation left">
+
+                    <i class="ion-calendar large-icon color-white"></i>
+                </a>
+               
+                <a href="Pages/AccountList.html" class="link no-animation center">
+                    <i class="ion-ios-briefcase large-icon color-white"></i>
+                </a>
+                
+
+              
+
+                <a href="#" data-panel="right" class="open-panel link right">
+                    <i class="ion-settings large-icon color-white"></i>
+
+                </a>
+
+
+            </div>
+        </div>
+        <!-- Speed Dial Wrap -->
+        <div class="speed-dial">
+            <!-- FAB inside will open Speed Dial actions -->
+            <a href="#" class="floating-button">
+                <!-- First icon is visible when Speed Dial actions are closed -->
+                <i class="icon icon-plus"></i>
+                <!-- Second icon is visible when Speed Dial actions are opened -->
+                <i class="icon icon-close"></i>
+            </a>
+            <!-- Speed Dial Actions -->
+            <div class="speed-dial-buttons">
+                <!-- First Speed Dial button -->
+                <a href="Pages/Expense.html" class="link center">
+                    <i class="ion-ios-cart large-icon color-white"></i>
+                </a>
+                <a href="Pages/Income.html" class="link center">
+                    <i class="ion-social-usd large-icon color-white">
+
+                    </i>
+                </a>
+                <a href="Pages/Event.html" class="link right">
+                    <i class="ion-speakerphone large-icon color-white"></i>
+                </a>
+            </div>
+        </div>
+        <!-- End of Speed Dial -->        
+        <div class="page-content">
+
+            <div id="ccontainer" class=" chart-home-area">
+            </div>
+
+
+            <div class="list-block">
+                <ul>
+                    <li>
+                        <a href="Pages/Budget.html" class="item-link item-content">
+                            <div class="item-inner">
+                                <div class="item-title label">Budget</div>
+                                <div class="item-after ">
+                                    <progress id="bp" value="50" max="100">
+                                    </progress>
+                                    <span class="progresslabel">
+                                        <span class="monthly-expense color-red">  </span> <span class="color-black">&nbsp;/&nbsp;</span> <span class="color-blue monthly-budget"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="content-block-title">Upcoming Events</div>
+            <div class="list-block media-list upcoming-events-list">
+                <ul>
+                    <li class="item-content">
+                        No Upcoming Event
+                    </li>
+                </ul>
+            </div>
+            <div class="content-block-title">Targets</div>
+            <div class="list-block media-list upcoming-targets-list">
+                <ul>
+                    <li class="item-content">
+                        No Upcoming Target
+                    </li>
+                </ul>
+            </div>
+            <div class="content-block-title"></div>
+        </div>
+    </div>
+</div>

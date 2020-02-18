@@ -1,14 +1,50 @@
-﻿@if (Request.IsAuthenticated) {
-    <text>
-        Hello, @Html.ActionLink(User.Identity.Name, "Manage", "Account", routeValues: null, htmlAttributes: new { @class = "username", title = "Manage" })!
-        @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" })) {
-            @Html.AntiForgeryToken()
-            <a href="javascript:document.getElementById('logoutForm').submit()">Log off</a>
-        }
-    </text>
-} else {
-    <ul>
+﻿@using Microsoft.AspNet.Identity
+@if (Request.IsAuthenticated)
+{
+     
+         
+    <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                <span class="glyphicon glyphicon-user"></span>  @User.Identity.GetUserName() <span class="badge">@Pocket.Common.Global.getNotificationCount()</span> <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                <li>
+                                    <a href="/Account/Manage" title="Manage">Manage</a>
+                                </li>
+                                <li>
+                                    <a href="/Notification/" title="Notifications">Notifications <span class="badge pull-right">@Pocket.Common.Global.getNotificationCount()</span></a>
+                                </li>
+                                <li><a href="#" onclick="ShowCustomerRequest()">Contact Us</a></li>
+                                @if(User.IsInRole("Admin"))
+                                {
+                                    
+                                <li><a href="/Admin" title="Administration" ><span class="glyphicon glyphicon-wrench"></span>  Administration</a></li>
+                                }
+                                <li><a href="javascript:document.getElementById('logoutForm').submit()"><span class="glyphicon glyphicon-log-out"></span> Log off</a></li>
+                                <li>
+                                    <form action="/Account/LogOff" method="post" id="logoutForm">
+                                        @Html.AntiForgeryToken()
+                                    </form>
+                                </li>
+                            </ul>
+    
+                                
+                        </li>
+    
+            
+    
+}
+else
+{
+    <form class="navbar-form navbar-right" role="form">
+                    <a href="/Account/Login" class="btn btn-default">Sign in</a>
+                    <a href="/Account/Register" class="btn btn-primary">Register</a>
+        <a href="#" role="button" class="btn btn-info" onclick="ShowCustomerRequest()" >Contact Us</a>
+                </form>
+    @*<ul class="nav navbar-nav navbar-right">
         <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
         <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
-    </ul>
+        <li><a href="#crequest" role="button" class="btn btn-info" data-toggle="modal">Contact Us</a></li>
+    </ul>*@
 }

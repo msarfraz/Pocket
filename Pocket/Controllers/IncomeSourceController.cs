@@ -8,122 +8,14 @@ using System.Web;
 using System.Web.Mvc;
 using Pocket.Common;
 using Pocket.Models;
+using Pocket.Extensions;
 
 namespace Pocket.Controllers
 {
+    [Authorize]
     public class IncomeSourceController : Controller
     {
         private QDbContext db = new QDbContext();
-
-        // GET: /IncomeSource/
-        public ActionResult Index()
-        {
-            var incomesources = db.IncomeSources.Include(i => i.IconFile).Include(i => i.User);
-            return View(incomesources.ToList());
-        }
-
-        // GET: /IncomeSource/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            IncomeSource incomesource = db.IncomeSources.Find(id);
-            if (incomesource == null)
-            {
-                return HttpNotFound();
-            }
-            return View(incomesource);
-        }
-
-        // GET: /IncomeSource/Create
-        public ActionResult Create()
-        {
-            ViewBag.IconID = new SelectList(db.Icons, "IconID", "Name");
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID");
-            return View();
-        }
-
-        // POST: /IncomeSource/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include="SourceID,UserID,Name,IconID")] IncomeSource incomesource)
-        {
-            if (ModelState.IsValid)
-            {
-                db.IncomeSources.Add(incomesource);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            ViewBag.IconID = new SelectList(db.Icons, "IconID", "Name", incomesource.IconID);
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID", incomesource.UserID);
-            return View(incomesource);
-        }
-
-        // GET: /IncomeSource/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            IncomeSource incomesource = db.IncomeSources.Find(id);
-            if (incomesource == null)
-            {
-                return HttpNotFound();
-            }
-            ViewBag.IconID = new SelectList(db.Icons, "IconID", "Name", incomesource.IconID);
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID", incomesource.UserID);
-            return View(incomesource);
-        }
-
-        // POST: /IncomeSource/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include="SourceID,UserID,Name,IconID")] IncomeSource incomesource)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(incomesource).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            ViewBag.IconID = new SelectList(db.Icons, "IconID", "Name", incomesource.IconID);
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "LoginID", incomesource.UserID);
-            return View(incomesource);
-        }
-
-        // GET: /IncomeSource/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            IncomeSource incomesource = db.IncomeSources.Find(id);
-            if (incomesource == null)
-            {
-                return HttpNotFound();
-            }
-            return View(incomesource);
-        }
-
-        // POST: /IncomeSource/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            IncomeSource incomesource = db.IncomeSources.Find(id);
-            db.IncomeSources.Remove(incomesource);
-            db.SaveChanges();
-            return RedirectToAction("Index");
-        }
 
         protected override void Dispose(bool disposing)
         {
@@ -152,64 +44,113 @@ namespace Pocket.Controllers
             //return Json(selectStr, JsonRequestBehavior.AllowGet);
         }
 
-        // GET: /Payee/List
-        public ActionResult List()
+        // GET: /Payee/Index
+        public ActionResult Index()
         {
             return View(db.Users.Find(State.UserID).IncomeSources);
         }
-        // GET: /Payee/
+        
+        public JsonResult MList()
+        {
+            return (JsonResult) GetList("Name", "asc", 1, 100, ResultType.Mobile);
+        }
         public JsonResult JList(string sidx, string sord, int page, int rows)
         {
-            if (Request.IsAjaxRequest())
-            {
+            return GetList(sidx, sord, page, rows, ResultType.Web);
+        }
+        private JsonResult GetList(string sidx, string sord, int page, int rows, ResultType rt)
+        {
                 var sources = db.Users.Find(State.UserID).IncomeSources;
 
-                return Util.CreateJsonResponse<IncomeSource>(sidx, sord, page, rows, sources, (Func<IEnumerable<IncomeSource>, Array>)delegate(IEnumerable<IncomeSource> rd)
+                return Util.CreateJsonResponse<IncomeSource>(sidx, sord, page, rows, sources,rt, (Func<IEnumerable<IncomeSource>, Array>)delegate(IEnumerable<IncomeSource> rd)
                 {
-                    return (
+                    if (rt == ResultType.Web)
+                    {
+                        return (
                         from source in rd
                         select new
                         {
                             SourceID = source.SourceID,
-                            cell = new string[] { source.SourceID.ToString(), source.Name}
+                            cell = new string[] { source.SourceID.ToString(), source.Name }
                         }).ToArray();
+                    }
+                    else
+                    {
+                        return (
+                        from source in rd
+                        select new { SourceID = source.SourceID, Name = source.Name }
+                        ).ToArray();
+                    }
                 }
                     );
-            }
-            else
-                return Json(new HttpStatusCodeResult(HttpStatusCode.BadRequest));
 
+        }
+        [HttpPost]
+        public JsonResult MEdit([Bind(Include = "SourceID,Name")] int SourceID, string Name)
+        {
+            return Edit<JsonResult>(SourceID, Name);
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public JsonResult JEdit([Bind(Include = "SourceID,Name")] IncomeSource source)
+        public JsonResult JEdit([Bind(Include = "SourceID,Name")] int SourceID, string Name)
         {
-            if (Request.IsAjaxRequest() && ModelState.IsValid)
+            return Edit<JsonResult>(SourceID, Name);
+        }
+
+        private T Edit<T>([Bind(Include = "SourceID,Name")] int SourceID, string Name)where T:JsonResult
+        {
+            if (ModelState.IsValid)
             {
-                source.UserID = State.UserID;
-                if (source.SourceID == 0) //add
+                IncomeSource source = db.IncomeSources.Where(ics => ics.SourceID == SourceID && ics.UserID == State.UserID).FirstOrDefault();
+                if (source == null) //add
                 {
+                    source = new IncomeSource();
+                    source.UserID = State.UserID;
+                    source.Name = Name;
                     db.IncomeSources.Add(source);
                 }
                 else
                 {
+                    source.Name = Name;
                     db.Entry(source).State = EntityState.Modified;
                 }
                 db.SaveChanges();
-                return Json(new
-                {
-                    success = true,
-                    message = "success",
-                    new_id = source.SourceID
-                });
+                return Repository.Success<T>(source.SourceID);
+               
             }
-            return Json(new
-            {
-                success = false,
-                message = "Model state is invalid.",
-                new_id = 0
-            });
+            return Repository.Failure<T>();
+        }
+        [HttpPost]
+        public JsonResult MDelete(int SourceID)
+        {
+            return Delete<JsonResult>(SourceID);
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public JsonResult JDelete(int SourceID)
+        {
+            return Delete<JsonResult>(SourceID);
+        }
+
+        private T Delete<T>(int SourceID) where T : JsonResult
+        {
+                try
+                {
+                    IncomeSource source = db.IncomeSources.Where(s => s.UserID == State.UserID && s.SourceID == SourceID).FirstOrDefault();
+                    if (source != null)
+                    {
+                        db.IncomeSources.Remove(source);
+                        db.SaveChanges();
+                        return Repository.Success<T>(source.SourceID);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+                return Repository.DelFailure<T>();
         }
     }
 }

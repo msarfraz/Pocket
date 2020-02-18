@@ -16,9 +16,9 @@ namespace Pocket.Models
 
         [Required()]
         [Key, Column("user_id", Order = 0)]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
-        public virtual User User { get; set; }
+        public virtual ApplicationUser User { get; set; }
         public virtual Event Event { get; set; }
         
     }

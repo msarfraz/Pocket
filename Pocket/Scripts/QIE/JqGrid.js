@@ -14,10 +14,16 @@
         extraParams['addgrid'] = true;
     if (!'editgrid' in extraParams)
         extraParams['editgrid'] = true;
+    if (!extraParams['delgrid'])
+        extraParams['delgrid'] = false;
     if (!'gridview' in extraParams)
         extraParams['gridview'] = true;
     if (!'treeGrid' in extraParams)
         extraParams['treeGrid'] = false;
+
+    if (!'footerrow' in extraParams)
+        extraParams['footerrow'] = false;
+
     if (!extraParams['editExtraParams'])
         extraParams['editExtraParams'] = {};
     extraParams['editExtraParams']["__RequestVerificationToken"] = jQuery('input[name=__RequestVerificationToken]').val();
@@ -27,15 +33,21 @@
         url: listurl,
         postData: postData,
         datatype: "json",
+        //mtype: 'POST',
         height: 'auto',
         autowidth: true,
-        forceFit: true,
+        //shrinkToFit: true,
+        //forceFit: true,
+        scroll: false,
         colNames: colNames,
         colModel: colModel,
         keyIndex: true,
         rowNum: 10,
         rowList: [10,20,50,100],
         pager: prowid,
+        footerrow: extraParams['footerrow'],
+        loadComplete: extraParams['loadComplete'],
+
         sortname: extraParams['sidx'],
         viewrecords: true,
         sortorder: extraParams['sord'],
@@ -53,12 +65,30 @@
         subGridRowExpanded: subGridRowExpanded,
         subGridRowColapsed: subGridRowColapsed,
         grouping: extraParams['grouping'],
-        groupingView: { groupField: extraParams['groupField'],groupOrder:extraParams['groupOrder'],hideFirstGroupCol:true,showSummaryOnHide:true, groupDataSorted: true, groupSummary: [true], groupSummaryPos: ['footer'], showSummaryOnHide: true }
-        
+        groupingView: { groupField: extraParams['groupField'], groupOrder: extraParams['groupOrder'], hideFirstGroupCol: true, showSummaryOnHide: true, groupDataSorted: true, groupSummary: [true], groupSummaryPos: ['footer'], showSummaryOnHide: true }
+                
            
     });
     //jQuery(edrowid).jqGrid('filterToolbar', { stringResult: true, searchOnEnter: false, defaultSearch: "ExpenseDate" });
-    jQuery(edrowid).jqGrid('navGrid', prowid, { edit: false, add: false, del: false,search:false });
+    jQuery(edrowid).jqGrid('navGrid', prowid, {
+        edit: false, add: false, del: extraParams['delgrid'], search: false, delfunc: function (rowid) {
+            jQuery(edrowid).jqGrid('delGridRow', rowid, {
+                top: 175,
+                left: 400,
+                caption: 'Delete Record',
+                msg: '<br />&nbsp;Are you sure you wish to delete <br/> the selected row?',
+                bSubmit: 'Yes',
+                bCancel: 'No',
+                url: extraParams['delurl'],
+                delData: extraParams['editExtraParams'],
+                afterComplete: function (response, postdata, formid) {
+                    if (!response.responseJSON.success) {
+                        alert(response.responseJSON.message);
+                    }
+                }
+            });
+        }
+    });
     jQuery(edrowid).jqGrid('inlineNav', prowid, {
         edit: extraParams['editgrid'],
         add: extraParams['addgrid'],
@@ -82,7 +112,10 @@
                 //},
                 //onError: function () { alert('onError'); },
                 successfunc: function (response, id) {
-                    $(edrowid).jqGrid().trigger('reloadGrid');
+                    if (!response.responseJSON.success) {
+                        alert(response.responseJSON.message);
+                    }
+                        $(edrowid).jqGrid().trigger('reloadGrid');
                     return response.responseJSON.success;
                 }
             }
@@ -93,8 +126,11 @@
             extraparam: extraParams['editExtraParams'], //{ __RequestVerificationToken: jQuery('input[name=__RequestVerificationToken]').val() },
             successfunc: function (response, id) {
                 //$("#edrowid").jqGrid('setGridParam', { datatype: 'json' });
-                if(!response.responseJSON.success)
+                if (!response.responseJSON.success)
+                {
+                    alert(response.responseJSON.message);
                     $(edrowid).jqGrid().trigger('reloadGrid');
+                }
                 return response.responseJSON.success;
             }
         }
@@ -118,7 +154,7 @@ function CreateJQGridSubGrid(listurl, colNames, colModel, pkey, editurl, caption
         $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>");
 
         //create subgrid
-        createJQGrid(sgUrl + row_id, sgColNames, sgColModel, sgPKey, sgEditUrl + row_id, sgCaption, "#" + subgrid_table_id, "#" + pager_id, null, {sidx:extraParams['sg_sidx'], sord:extraParams['sg_sord']});
+        createJQGrid(sgUrl + row_id, sgColNames, sgColModel, sgPKey, sgEditUrl + row_id, sgCaption, "#" + subgrid_table_id, "#" + pager_id, null, { sidx: extraParams['sg_sidx'], sord: extraParams['sg_sord'], delgrid: true, delurl: '/subcat/jdelete' });
         
     };
     subGridRowColapsed= function(subgrid_id, row_id) {
@@ -133,7 +169,7 @@ function CreateJQGridSubGrid(listurl, colNames, colModel, pkey, editurl, caption
 
 }
 
-function CreateJQGridTree(gridid, listurl, colNames, colModel, ExpandColumn, caption, postData, sidx)
+function CreateJQGridTree(gridid, listurl, colNames, colModel, ExpandColumn, caption, postData, sidx, loadCompleteFunc)
 {
     $(gridid).jqGrid({
         url: listurl,
@@ -143,11 +179,14 @@ function CreateJQGridTree(gridid, listurl, colNames, colModel, ExpandColumn, cap
         colModel: colModel,
         treeGridModel: 'adjacency',
         height: 'auto',
+        autowidth: true,
         rowNum: 10000,
         treeGrid: true,
         ExpandColumn: ExpandColumn,
         caption: caption,
         postData: postData,
-        sortname: sidx
+        sortname: sidx,
+        footerrow: true,
+        loadComplete: loadCompleteFunc,
     });
 }

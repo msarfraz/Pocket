@@ -1,0 +1,42 @@
+{{#.}}
+	<li id="{{TransactionID}}">
+        <a {{#if UserName}} href="#" {{else}} href="Pages/{{ObjectType}}.html?id={{TransactionID}}" {{/if}} class="item-link item-content" data-transaction-id="{{TransactionID}}">
+            {{#js_compare "this.ObjectType === 'Expense'"}}
+<div class="item-media "><span class="badge bg-red"> <i class="icon ion-ios-cart-outline color-white"></i></span></div>
+{{else}}
+{{#js_compare "this.ObjectType === 'Income'"}}
+<div class="item-media "><span class="badge bg-blue"> <i class="icon ion-social-usd color-white"></i></span></div>
+{{else}}
+{{#js_compare "this.ObjectType === 'Saving'"}}
+<div class="item-media "><span class="badge bg-green"> <i class="icon ion-social-usd color-white"></i></span></div>
+{{else}}
+{{#js_compare "this.ObjectType === 'Transfer'"}}
+<div class="item-media "><span class="badge bg-gray"> <i class="icon ion-arrow-swap color-white"></i></span></div>
+{{/js_compare}}
+{{/js_compare}}
+{{/js_compare}}
+{{/js_compare}}
+            <div class="item-inner">
+                <div class="item-title-row">
+                    <div class="item-title">{{#to_date TransactionDate}}{{/to_date}} </div> 
+                    {{#js_compare "this.TransactionType === 'Debit'"}}
+                    <div class="item-after"><span class="color-blue">{{Amount}}</span></div>
+                    {{else}}
+                    {{#js_compare "this.TransactionType === 'Credit'"}}
+                    <div class="item-after"><span class="color-red">{{Amount}}</span></div>
+                    {{else}}
+                    <div class="item-after">{{Amount}}</div>
+                    {{/js_compare}}
+                    {{/js_compare}}
+                    
+                </div>
+                <div class="item-subtitle">{{Description}}</div>
+                <div class="item-subtitle"><span class="color-gray">{{Balance}}</span></div>
+                {{#if UserName}}
+                <span class="badge bg-green">{{UserName}}</span>
+                {{/if}}
+            </div>
+        </a>
+</li>
+
+{{/.}}

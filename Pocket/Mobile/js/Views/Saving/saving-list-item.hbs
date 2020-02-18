@@ -1,0 +1,17 @@
+{{#.}}
+	<li class="swipeout saving-swipeout-{{SavingID}}" id="{{SavingID}}">
+        <a href="Pages/Saving.html?id={{SavingID}}" class="swipeout-content item-link item-content">
+            <div class="item-media"><span class="badge bg-green"><i class="icon ion-cube"></i></span></div>
+            <div class="item-inner">
+                <div class="item-title-row">
+                    <div class="item-title">{{AccountText}}</div>
+                    <div class="item-after">{{Amount}}</div>
+                </div>
+                <div class="item-subtitle">{{#to_date SavingDate}}{{/to_date}}</div>
+            </div>
+        </a>
+        <div class="swipeout-actions-right">
+            <a href="#" class="saving-delete-link bg-red" data-id="{{SavingID}}">Delete</a>
+        </div>
+</li>
+{{/.}}

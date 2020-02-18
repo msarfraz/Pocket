@@ -1,0 +1,29 @@
+<div class="page-content">
+    <form method="get" action="/payee/jedit" id="contactEdit" class="list-block ajax-submit">
+        
+        <input name="id" type="hidden" value="{{model.PayeeID}}">
+        <ul>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-ios-football-outline"></i></div>
+                    <div class="item-inner">
+                        <div class="item-input">
+                            <input name="PayeeID" type="text" placeholder="Payee ID" value="{{model.PayeeID}}">
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-ios-football-outline"></i></div>
+                    <div class="item-inner">
+                        <div class="item-input">
+                            <input name="Name" type="text" placeholder="Payee Name" value="{{model.Name}}">
+                        </div>
+                    </div>
+                </div>
+            </li>
+            
+        </ul>
+    </form>
+</div>

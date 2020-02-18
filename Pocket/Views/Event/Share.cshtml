@@ -8,6 +8,7 @@
 <script src="~/Scripts/grid.locale-en.js"></script>
 <script src="~/Scripts/jquery.jqGrid.src.js"></script>
 <script src="~/Scripts/QIE/JqGrid.js"></script>
+<script src="~/Scripts/QIE/Common.js"></script>
 
 <h2>@Model.Name</h2>
 
@@ -25,13 +26,13 @@
         { name: 'Name', index: 'Name', width: 100, editable: false },
         { name: 'Share', formatter: ButtonFormatter, editable: false }
         ];
-    createJQGrid('/event/jshare', colNames, colModel, 'EventID', "/event/jedit", "Friend List", "#lstFriends", '#pgrFriend', {EventID:evid}, { addgrid:false,editgrid:false,sidx:'UserID' });
+    createJQGrid('/event/jshare', colNames, colModel, 'EventID', "/event/jedit", "Friend List", "#lstFriends", '#pgrFriend', {EventID:evid}, { addgrid:false,editgrid:false,sidx:'Id' });
 
     function ButtonFormatter(cellvalue, options, rowObject) {
         // format the cellvalue to new format
         
         if (cellvalue && cellvalue.length > 0) {
-            var tag = "<input type='button' value='Share' onclick='shareFriend(" + cellvalue + ")'/>"
+            var tag = "<input type='button' class='btn btn-success' value='Share' onclick='shareFriend(\"" + cellvalue + "\")'/>";
             return tag;
         }
         else
@@ -40,9 +41,12 @@
     }
     function shareFriend(friendID)
     {
-        $.post("/event/share", { EventID: evid, UserID: friendID, __RequestVerificationToken: jQuery('input[name=__RequestVerificationToken]').val() })
-          .done(function (data) {
-              $("#lstFriends").jqGrid().trigger('reloadGrid');
-          });
+        PostData("/event/share", { EventID: evid, UserID: friendID }, function (data) {
+            $("#lstFriends").jqGrid().trigger('reloadGrid');
+        });
+        //$.post("/event/share", { EventID: evid, UserID: friendID, __RequestVerificationToken: jQuery('input[name=__RequestVerificationToken]').val() })
+        //  .done(function (data) {
+        //      $("#lstFriends").jqGrid().trigger('reloadGrid');
+        //  });
     }
 </script>

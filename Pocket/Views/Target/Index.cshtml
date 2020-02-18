@@ -1,51 +1,96 @@
 ﻿@model IEnumerable<Pocket.Models.Target>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Targets";
 }
 
-<h2>Index</h2>
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/QIE/JqGrid.js"></script>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.User.LoginID)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.TargetAmount)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ExpectedDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th></th>
-    </tr>
+<br />
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.LoginID)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.TargetAmount)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ExpectedDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.TargetID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.TargetID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.TargetID })
-        </td>
-    </tr>
-}
+<table id="lstTarget"></table>
+<div id="pgrTarget"></div>
 
-</table>
+<div id="dlgSavings" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Savings</h4>
+            </div>
+            <div class="modal-body" id="SavingsBody">
+                
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    @Html.AntiForgeryToken()
+</div>
+<script type="text/javascript">
+    var colNames = ['TargetID', 'Name', 'Amount', 'Status', 'Target Date','Initial Saving','Saving Plan','Planned Saving','Include in Budget', 'Current Saving', 'Required Saving', 'Expected Date', 'Progress', 'Savings'];
+    var colModel = [
+        { name: 'TargetID', index: 'TargetID', width: 55, key: true, hidden: true },
+        { name: 'Name', index: 'Name', width: 100, editable: true, editrules: { required: true } },
+        { name: 'TargetAmount', index: 'TargetAmount', width: 50, editable: true, editrules: { required: true, number: true } },
+    { name: 'Status', index: 'Status', width: 50, editable: true, edittype: 'select', editrules: { required: true, select: true }, editoptions: { dataUrl: '/Target/TargetStatus' } },
+         {
+             name: 'TargetDate', index: 'TargetDate', width: 100, editable: true, sorttype: "date", datefmt: 'mm/dd/yyyy', editoptions: {
+                 dataInit: function (el) {
+                     $(el).datepicker({ dateFormat: 'mm/dd/yy' });
+                 },
+
+             },
+             editrules: { required: true, date: true }
+         },
+         { name: 'InitialAmount', index: 'InitialAmount', width: 100, editable: true, editrules: { required: true, number: true } },
+         { name: 'BudgetDuration', index: 'BudgetDuration', width: 100, editable: true, edittype: 'select', editrules: { required: false, select: true }, editoptions: { dataUrl: '/api/common/RecursionOptions' } },
+         { name: 'BudgetAmount', index: 'BudgetAmount', width: 100, editable: true, editrules: { required: true, number: true } },
+         { name: 'Budgeted', index: 'Budgeted', width: 100, editable: true, hidden: true, edittype: 'select', editrules: { required: true, select: true }, editoptions: { dataUrl: '/Event/JYesNoOptions' } },
+
+         { name: 'CurrentSaving', index: 'CurrentSaving', width: 100, editable: false },
+         { name: 'RequiredSaving', index: 'RequiredSaving', width: 100, editable: false },
+         { name: 'ExpectedDate', index: 'ExpectedDate', width: 100, editable: false },
+         { name: 'Progress', index: 'Progress', width: 100, editable: false, formatter:progressFormatter },
+         { name: 'Savings', formatter: SavingFormatter, editable: false }
+    ];
+    createJQGrid('/target/jlist', colNames, colModel, 'TargetID', "/target/jedit", "Target List", "#lstTarget", '#pgrTarget', null, { sidx: 'TargetDate', sord: 'asc', footerrow: true, loadComplete: loadCompleteFunc, delgrid: true, delurl: '/target/jdelete' });
+    function loadCompleteFunc() {
+        var grid = $("#lstTarget"),
+            sum = grid.jqGrid('getCol', 'TargetAmount', false, 'sum');
+
+        grid.jqGrid('footerData', 'set', { Name: 'Total:', TargetAmount: sum.toFixed(2) });
+
+    }
+    function progressFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        if (cellvalue && cellvalue.length > 0) {
+            if (cellvalue == "100")
+                cellvalue = "99";
+            var tag = "<div class='progress progress-striped'> <div class='progress-bar' style='width:" + cellvalue + "%;height:100%;'></div> </div>";
+            return tag;
+        }
+        else
+            return "<label></label>";
+    }
+    function SavingFormatter(cellvalue, options, rowObject) {
+        // format the cellvalue to new format
+        var targetID = rowObject[0];
+
+        var tag = "<button type='button' class='btn btn-default btn-xs' onclick='showdlg(this)' data-original-target='" + targetID + "'><span class='glyphicon glyphicon-check'></span> Add</button>";
+        return "<span>" + cellvalue + " &nbsp;</span>" + tag;
+
+    }
+    function showdlg(me) {
+        var targetid = $(me).data('original-target');
+        $("#dlgSavings").modal('show');
+        $("#SavingsBody").load("/Saving/Index?TargetID=" + targetid);
+
+    }
+    $('#dlgSavings').on('hidden.bs.modal', function (e) {
+        jQuery("#lstTarget").jqGrid().trigger("reloadGrid");
+    });
+ </script>

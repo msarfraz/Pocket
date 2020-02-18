@@ -1,41 +1,69 @@
-﻿@model Pocket.Models.RegisterModel
+﻿@model Pocket.Models.RegisterViewModel
 @{
     ViewBag.Title = "Register";
 }
+<link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+<link href="~/Content/social-buttons.css" rel="stylesheet" />
 
-<hgroup class="title">
-    <h1>@ViewBag.Title.</h1>
-    <h2>Create a new account.</h2>
-</hgroup>
+<h2>Register With @Pocket.Common.Global.ApplicationName</h2>
+<style>
+    .input-group-addon {
+        min-width: 150px;
+        text-align: right;
+    }
 
-@using (Html.BeginForm()) {
-    @Html.AntiForgeryToken()
-    @Html.ValidationSummary()
+</style>
+<div class="row">
+    <div class="col-md-8">
+        <section id="loginForm">
+            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-signin", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <h4>Create a new account.</h4>
+                <hr />
+                @Html.ValidationSummary()
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon"> <span class="glyphicon glyphicon-user"></span> &nbsp;Login: </span>
+                        @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", placeholder = "User Login" })
+                    </div>
+                </div>
 
-    <fieldset>
-        <legend>Registration Form</legend>
-        <ol>
-            <li>
-                @Html.LabelFor(m => m.UserName)
-                @Html.TextBoxFor(m => m.UserName)
-            </li>
-            <li>
-                @Html.LabelFor(m => m.Password)
-                @Html.PasswordFor(m => m.Password)
-            </li>
-            <li>
-                @Html.LabelFor(m => m.ConfirmPassword)
-                @Html.PasswordFor(m => m.ConfirmPassword)
-            </li>
-            <li>
-                @Html.LabelFor(m => m.Email)
-                @Html.TextBoxFor(m => m.Email)
-            </li>
-        </ol>
-        <input type="submit" value="Register" />
-    </fieldset>
-}
+                <div class="form-group">
+                    <div class="input-group">
 
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-}
+                        <span class="input-group-addon">&nbsp; Password: </span>
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon"> &nbsp; Confirm Password: </span>
+                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">  Email Address: </span>
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <div class="input-group center-block">
+                        <input type="submit" class="btn btn-primary" value="Register" />
+                        <a href="/Account/login" class="btn btn-default">Cancel</a>
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section id="socialLoginForm">
+            @Html.Partial("_ExternalLoginsListPartial", new { Action = "ExternalLogin", ReturnUrl = ViewBag.ReturnUrl })
+        </section>
+    </div>
+    </div>
+

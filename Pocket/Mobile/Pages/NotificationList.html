@@ -1,0 +1,31 @@
+
+
+<div class="pages">
+    <div data-page="notificationlist" class="page notificationlist-page" data-pg-controller="notification" data-pg-init="initlist">
+        
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left"><a href="#" class="link icon-only open-panel"><i class="icon icon-bars"></i></a></div>
+        <div class="center sliding notifications-list-header" style="left:22px">Notifications</div>
+        
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar" data-search-list=".notifications-list" data-search-in=".item-title">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content infinite-scroll notification-infinite-scroll" data-distance="100">
+            <div class="list-block media-list notifications-list searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+        
+    </div>
+</div>

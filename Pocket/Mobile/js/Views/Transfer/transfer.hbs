@@ -1,0 +1,99 @@
+    <form id="transferedit" class="list-block">
+        <input name="TransferID" type="hidden" value="{{model.TransferID}}">
+        <ul>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-ios-calendar-outline color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Date</div>
+                        <div class="item-input">
+                            <input name="TransferDate" type="date" placeholder="Transfer Date" value="{{model.TransferDate}}" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-social-usd color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Amount</div>
+                        <div class="item-input">
+                            <input id="TransferAmount" name="TransferAmount" type="number" class="item-input" placeholder="Transfer amount" value="{{model.Amount}}" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <!-- Additional "smart-select" class -->
+                <a href="#" class="item-link smart-select" data-back-on-select="true">
+                    <!-- select -->
+                    <select name="TransferSourceAccount" class="transfer-source-list">
+                        {{#each model.SourceAccounts}}
+                        {{#unless Name}}
+                        {{#each Accounts}}
+                        <option value="{{AccountID}}">{{Name}}</option>
+                        {{/each}}
+                        {{else}}
+                        <optgroup label="{{Name}}">
+                            {{#each Accounts}}
+                            <option value="{{AccountID}}">{{Name}}</option>
+                            {{/each}}
+                        </optgroup>
+                        {{/unless}}
+                        {{/each}}
+                    </select>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-briefcase color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <!-- Select label -->
+                            <div class="item-title">Source Account</div>
+                            <!-- Selected value, not required -->
+                            <div class="item-after">{{model.SourceAccountText}} </div>
+                        </div>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <!-- Additional "smart-select" class -->
+                <a href="#" class="item-link smart-select" data-back-on-select="true">
+                    <!-- select -->
+                    <select name="TransferTargetAccount" class="transfer-target-list">
+                        {{#each model.TargetAccounts}}
+                        {{#unless Name}}
+                        {{#each Accounts}}
+                        <option value="{{AccountID}}">{{Name}}</option>
+                        {{/each}}
+                        {{else}}
+                        <optgroup label="{{Name}}">
+                            {{#each Accounts}}
+                            <option value="{{AccountID}}">{{Name}}</option>
+                            {{/each}}
+                        </optgroup>
+                        {{/unless}}
+                        {{/each}}
+                    </select>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-briefcase color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <!-- Select label -->
+                            <div class="item-title">Target Account</div>
+                            <!-- Selected value, not required -->
+                            <div class="item-after">{{model.TargetAccountText}} </div>
+                        </div>
+                    </div>
+                </a>
+            </li>
+            
+            <li>
+                <div class="item-content">
+                    <div class="item-media"><i class="icon ion-ios-list-outline color-form-icon"></i></div>
+                    <div class="item-inner">
+                        <div class="item-title label">Description</div>
+                        <div class="item-input">
+                            <input name="TransferDescription" class="item-input" type="text" placeholder="Description" value="{{model.Description}}" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </form>

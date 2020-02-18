@@ -1,0 +1,36 @@
+
+
+<div class="pages">
+	<div data-page="incomesourcelist" class="page incomesourcelist-page" data-pg-controller="incomesource" data-pg-init="initlist">
+        <div class="navbar">
+    <div class="navbar-inner">
+        <div class="left"><a href="#" data-panel="right" class="link icon-only open-panel"><i class="icon icon-bars"></i></a></div>
+        <div class="center sliding incomesources-list-header" style="left:22px">Income Sources</div>
+        <div class="right">
+            <a href="Pages/IncomeSource.html" class="link icon-only"><i class="icon icon-plus">+</i></a>
+        </div>
+    </div>
+</div>
+        <!-- Search bar -->
+        <form class="searchbar searchbar-init" data-search-list=".incomesources-list" data-search-in=".item-title" data-found=".searchbar-found" data-not-found=".searchbar-not-found">
+            <div class="searchbar-input">
+                <input type="search" placeholder="Search">
+                <a href="#" class="searchbar-clear"></a>
+            </div>
+            <a href="#" class="searchbar-cancel">Cancel</a>
+        </form>
+
+        <!-- Search bar overlay-->
+        <div class="searchbar-overlay"></div>
+        <div class="page-content">
+            <!-- This block will be displayed if nothing found -->
+            <div class="content-block searchbar-not-found">
+                <div class="content-block-inner">No Income Source found</div>
+            </div>
+
+            <div class="list-block media-list incomesources-list searchbar-found">
+                <ul></ul>
+            </div>
+        </div>
+	</div>
+</div>

@@ -1,0 +1,18 @@
+{{#.}}
+	<li class="swipeout transfer-swipeout-{{TransferID}}" id="{{TransferID}}">
+        <a href="Pages/Transfer.html?id={{TransferID}}" class="swipeout-content item-link item-content">
+            <div class="item-media "><span class="badge bg-gray"> <i class="icon ion-arrow-swap color-white"></i></span></div>
+            <div class="item-inner">
+                <div class="item-title-row">
+                    <div class="item-title">{{#to_date TransferDate}}{{/to_date}}</div>
+                    <div class="item-after">{{Amount}}</div>
+                </div>
+                <div class="item-subtitle">{{SourceAccountText}} <i class="icon ion-arrow-right-a"></i> {{TargetAccountText}}</div>
+            </div>
+        </a>
+        <div class="swipeout-actions-right">
+            <a href="#" class="transfer-delete-link bg-red swipeout-overswipe" data-id="{{TransferID}}">Delete</a>
+        </div>
+</li>
+
+{{/.}}

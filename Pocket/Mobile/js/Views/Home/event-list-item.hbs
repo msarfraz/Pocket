@@ -1,0 +1,28 @@
+{{#.}}
+{{#if Editable}}
+	<li >
+        <a href="Pages/Event.html?id={{EventID}}" class="item-link item-content">
+            <div class="item-media"><i class="icon ion-speakerphone"></i></div>
+            <div class="item-inner">
+                <div class="item-title-row">
+                    <div class="item-title">{{Name}}</div>
+                    <div class="item-after">{{#to_date EventDate}}{{/to_date}}</div>
+                </div>
+            </div>
+        </a>
+</li>
+{{else}}
+<li id="{{EventID}}" >
+    <a href="Pages/ReportList.html?name=eventreport&eventid={{EventID}}" class="item-link item-content">
+        <div class="item-media"><i class="icon ion-speakerphone"></i></div>
+        <div class="item-inner">
+            <div class="item-title-row">
+                <div class="item-title">{{Name}}</div>
+                <div class="item-after">{{#to_date EventDate}}{{/to_date}}</div>
+            </div>
+        </div>
+    </a>
+</li>
+{{/if}}
+
+{{/.}}

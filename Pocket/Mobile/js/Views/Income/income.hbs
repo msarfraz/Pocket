@@ -1,0 +1,122 @@
+    <form id="incomeedit">
+        <div class="list-block">
+            <input name="IncomeID" type="hidden" value="{{model.IncomeID}}">
+            <ul>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-ios-calendar-outline color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Date</div>
+                            <div class="item-input">
+                                <input name="IncomeDate" type="date" placeholder="Income Date" value="{{model.IncomeDate}}" />
+                            </div>
+                        </div>
+                    </div>
+                </li>
+               
+                <li>
+                    <!-- Additional "smart-select" class -->
+                    <a href="#" class="item-link smart-select" data-back-on-select="true">
+                        <!-- select -->
+                        <select name="IncomeSourceID" class="income-source-list">
+                            {{#each model.Sources}}
+                            <option value="{{SourceID}}">{{Name}}</option>
+                            {{/each}}
+                        </select>
+                        <div class="item-content">
+                            <div class="item-media"><i class="icon ion-ios-lightbulb color-form-icon"></i></div>
+                            <div class="item-inner">
+                                <!-- Select label -->
+                                <div class="item-title">Income Source</div>
+                                <!-- Selected value, not required -->
+                                <div class="item-after">{{model.SourceText}} </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <!-- Additional "smart-select" class -->
+                    <a href="#" class="item-link smart-select" data-back-on-select="true">
+                        <!-- select -->
+                        <select name="IncomeAccountID" class="income-account-list">
+                            {{#each model.AccountGroups}}
+                            {{#unless UserName}}
+                            {{#each Accounts}}
+                            <option value="{{AccountID}}">{{Name}}</option>
+                            {{/each}}
+                            {{else}}
+                            <optgroup label="{{UserName}}">
+                                {{#each Accounts}}
+                                <option value="{{AccountID}}">{{Name}}</option>
+                                {{/each}}
+                            </optgroup>
+                            {{/unless}}
+                            {{/each}}
+                        </select>
+                        <div class="item-content">
+                            <div class="item-media"><i class="icon ion-ios-briefcase color-form-icon"></i></div>
+                            <div class="item-inner">
+                                <!-- Select label -->
+                                <div class="item-title">Account</div>
+                                <!-- Selected value, not required -->
+                                <div class="item-after income-account-list-text">{{model.AccountText}} </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon ion-social-usd color-form-icon"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">Amount</div>
+                            <div class="item-input">
+                                <input id="IncomeAmount" name="IncomeAmount" type="number" class="item-input" placeholder="Income amount" value="{{model.Amount}}" />
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                
+                
+                
+            </ul>
+        </div>
+       <div class="list-block">
+           <ul>
+               <li>
+                   <!-- Additional "smart-select" class -->
+                   <a href="#" class="item-link smart-select" data-back-on-select="true">
+                       <!-- select -->
+                       <select name="IncomeRepeat" class="income-repeat-list">
+                           {{#each model.RepeatTypes}}
+                           <option value="{{value}}">{{text}}</option>
+                           {{/each}}
+                       </select>
+                       <div class="item-content">
+                           <div class="item-media"><i class="icon ion-refresh color-form-icon"></i></div>
+                           <div class="item-inner">
+                               <!-- Select label -->
+                               <div class="item-title">Repeat</div>
+                               <!-- Selected value, not required -->
+                               <div class="item-after">{{model.RepeatText}} </div>
+                           </div>
+                       </div>
+                   </a>
+               </li>
+               <li>
+                   <div class="item-content">
+                       <div class="item-media"><i class="icon ion-ios-list-outline color-form-icon"></i></div>
+                       <div class="item-inner">
+                           <div class="item-title label">Description</div>
+                           <div class="item-input">
+                               <input name="IncomeDescription" class="item-input" type="text" placeholder="Description" value="{{model.Description}}" />
+                           </div>
+                       </div>
+                   </div>
+               </li>
+           </ul>
+       </div>
+    </form>
+    <div class="list-block inset">
+
+        <a href="#" class="button button-fill income-save-more-link">Save and add more </a>
+    </div>
